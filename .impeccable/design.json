@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-24T18:10:00Z",
+  "title": "Design System: VibeGet",
+  "extensions": {
+    "colorMeta": {
+      "ember-black": { "role": "neutral", "displayName": "Ember Black", "canonical": "oklch(14.5% 0.012 57.0)", "tonalRamp": ["#0f0a07", "#29231f", "#453e3a", "#635c57", "#867f7a", "#aba39e", "#d1c9c3", "#f5ede7"] },
+      "ember-ink": { "role": "neutral", "displayName": "Ember Ink", "canonical": "oklch(97.3% 0.018 64.9)", "tonalRamp": ["#100a04", "#2a221b", "#473e36", "#655c53", "#887e75", "#ada399", "#d3c8bf", "#f7ece2"] },
+      "ember-ink-soft": { "role": "neutral", "displayName": "Ember Ink Soft", "canonical": "oklch(88.7% 0.030 62.6)", "tonalRamp": ["#140801", "#2f2114", "#4c3c2f", "#6a5a4c", "#8e7d6e", "#b3a192", "#d9c7b7", "#feebda"] },
+      "ash": { "role": "neutral", "displayName": "Ash", "canonical": "oklch(71.9% 0.040 59.3)", "tonalRamp": ["#170600", "#321f0f", "#503b2a", "#6f5847", "#937b69", "#b89f8c", "#dfc5b1", "#ffe9d5"] },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "rgba(255, 214, 180, 0.12)" },
+      "hairline-lit": { "role": "neutral", "displayName": "Hairline Lit", "canonical": "rgba(255, 214, 180, 0.22)" },
+      "glass": { "role": "neutral", "displayName": "Glass", "canonical": "rgba(255, 226, 200, 0.055)" },
+      "glass-lit": { "role": "neutral", "displayName": "Glass Lit", "canonical": "rgba(255, 226, 200, 0.09)" },
+      "getcoin-gold": { "role": "primary", "displayName": "GetCoin Gold", "canonical": "oklch(81.8% 0.153 72.8)", "tonalRamp": ["#210000", "#431300", "#682e00", "#8f4a00", "#b66d00", "#de9305", "#ffbc61", "#ffe397"] },
+      "getcoin-flare": { "role": "primary", "displayName": "GetCoin Flare", "canonical": "oklch(72.4% 0.187 48.9)", "tonalRamp": ["#2a0000", "#520000", "#7c0d00", "#a82b00", "#d35200", "#fc7a21", "#ffa968", "#ffd39c"] },
+      "ember": { "role": "primary", "displayName": "Ember", "canonical": "oklch(68.2% 0.211 37.7)", "tonalRamp": ["#2e0000", "#580000", "#840000", "#b30300", "#e13c00", "#ff6b37", "#ff9d73", "#ffcaa4"] },
+      "live-red": { "role": "secondary", "displayName": "Live Red", "canonical": "oklch(62.9% 0.215 27.6)", "tonalRamp": ["#2f0000", "#590000", "#860000", "#b60000", "#e4312c", "#ff6357", "#ff9888", "#ffc5b5"] },
+      "live-red-ink": { "role": "secondary", "displayName": "Live Red Ink", "canonical": "#ff8a84" },
+      "rim-violet": { "role": "tertiary", "displayName": "Rim Violet", "canonical": "oklch(56.3% 0.249 282.4)", "tonalRamp": ["#100045", "#230074", "#3b12a6", "#5532db", "#735aff", "#9487ff", "#b9b5ff", "#dedeff"] },
+      "plate-cream": { "role": "neutral", "displayName": "Plate Cream", "canonical": "oklch(98.7% 0.011 76.6)", "tonalRamp": ["#0e0b07", "#27231e", "#433f3a", "#615d57", "#847f79", "#a8a49d", "#cecac3", "#f3eee7"] },
+      "plate-sand": { "role": "neutral", "displayName": "Plate Sand", "canonical": "oklch(92.4% 0.029 69.2)", "tonalRamp": ["#130901", "#2d2215", "#4a3d2f", "#695b4c", "#8c7d6e", "#b1a292", "#d7c8b7", "#fcecda"] },
+      "coin-shadow": { "role": "neutral", "displayName": "Coin Shadow", "canonical": "oklch(21.2% 0.050 52.1)", "tonalRamp": ["#190500", "#371c0b", "#553827", "#745644", "#997865", "#bf9d88", "#e6c2ad", "#ffe6d1"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headline only; a trailing clause may drop to 500 weight at 0.62em in GetCoin Gold." },
+      "headline": { "displayName": "Headline", "purpose": "Section h2s and the closing band." },
+      "title": { "displayName": "Title", "purpose": "Card and step h3s, wallet product name, tier names." },
+      "numeral-display": { "displayName": "Numeral Display", "purpose": "Gold step numbers; light weight at large size." },
+      "body": { "displayName": "Body", "purpose": "Running text; ledes 56ch max, FAQ answers 65ch max." },
+      "lede": { "displayName": "Lede", "purpose": "Opening paragraph under display and headline type." },
+      "figure": { "displayName": "Figure", "purpose": "Every amount, GetCoin count, timer, date and count; tabular." },
+      "label-live": { "displayName": "Live Label", "purpose": "Uppercase, tracked; AO VIVO badge and ticker live label only." }
+    },
+    "shadows": [
+      { "name": "pane", "value": "0 1px 0 rgba(255, 236, 214, 0.08) inset, 0 24px 60px -24px rgba(0, 0, 0, 0.7)", "purpose": "Every glass panel." },
+      { "name": "coin-glow", "value": "0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 10px 28px -10px rgba(255, 122, 26, 0.75)", "purpose": "Gold buttons at rest." },
+      { "name": "coin-glow-hover", "value": "0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 16px 40px -12px rgba(255, 122, 26, 0.95)", "purpose": "Gold buttons on hover, with a 1px lift." },
+      { "name": "tier-glow", "value": "0 30px 60px -30px rgba(255, 122, 26, 0.8)", "purpose": "The unlocked gold tier card." },
+      { "name": "coin-drop", "value": "drop-shadow(0 4px 10px rgba(255, 122, 26, 0.3))", "purpose": "Coin artwork (filter); the stage coin uses 0 18px 40px at 0.4." },
+      { "name": "glass-blur", "value": "blur(22px) saturate(150%)", "purpose": "backdrop-filter on glass panels." },
+      { "name": "ember-light", "value": "radial-gradient(circle, rgba(255, 122, 26, 0.42), rgba(239, 61, 54, 0.12) 45%, transparent 68%); filter: blur(24px)", "purpose": "Light-source pseudo-element placed behind glass compositions." }
+    ],
+    "motion": [
+      { "name": "ease-house", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "All state transitions, 0.3-0.5s." },
+      { "name": "coin-strike", "value": "0.55s ease-house, stagger 45ms, from translateY(-18px) scale(1.25) opacity 0", "purpose": "Signature GetCoin mint: coins stacking as the Get changes." },
+      { "name": "count-up", "value": "600ms, ease-out quartic (1 - (1 - k)^4)", "purpose": "GetCoin-back figure counting to its new value alongside the strike." },
+      { "name": "live-pulse", "value": "1.8s infinite ring, 0 to 8px, live-red at 0.6 alpha", "purpose": "Live dot only." },
+      { "name": "ticker-marquee", "value": "48s linear infinite, pauses on hover", "purpose": "Vibes-ao-vivo ticker band." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "600px" },
+      { "name": "md", "value": "900px" },
+      { "name": "lg", "value": "1120px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Coin Button",
+      "kind": "button",
+      "refersTo": "button-coin",
+      "description": "Primary action; the only gold control in its group.",
+      "html": "<button class=\"ds-btn-coin\">Criar conta grátis <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+      "css": ".ds-btn-coin { display: inline-flex; align-items: center; gap: 0.5em; height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent; font-family: 'Onest Variable', system-ui, sans-serif; font-weight: 600; font-size: 0.98rem; color: #2a1102; background: linear-gradient(180deg, #ffd07a, #ffb23f 45%, #ff7a1a); box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 10px 28px -10px rgba(255,122,26,0.75); cursor: pointer; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1); } .ds-btn-coin svg { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); } .ds-btn-coin:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 16px 40px -12px rgba(255,122,26,0.95); } .ds-btn-coin:hover svg { transform: translateX(3px); } .ds-btn-coin:active { transform: scale(0.98); } .ds-btn-coin:focus-visible { outline: 2px solid #ffb23f; outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action beside a coin button.",
+      "html": "<button class=\"ds-btn-ghost\">Já tenho conta</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid rgba(255,214,180,0.22); background: rgba(255,226,200,0.04); color: #fff4ea; font-family: 'Onest Variable', system-ui, sans-serif; font-weight: 600; font-size: 0.98rem; cursor: pointer; transition: background 0.3s, transform 0.4s cubic-bezier(0.16,1,0.3,1); } .ds-btn-ghost:hover { background: rgba(255,226,200,0.1); } .ds-btn-ghost:active { transform: scale(0.98); } .ds-btn-ghost:focus-visible { outline: 2px solid #ffb23f; outline-offset: 3px; }"
+    },
+    {
+      "name": "Glass Button",
+      "kind": "button",
+      "refersTo": "button-glass",
+      "description": "Card-level action for a Vibe that is not closing; warms to gold on hover.",
+      "html": "<button class=\"ds-btn-glass\">Entrar na Vibe</button>",
+      "css": ".ds-btn-glass { display: inline-flex; align-items: center; justify-content: center; height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid rgba(255,214,180,0.22); background: rgba(255,226,200,0.08); color: #fff4ea; font-family: 'Onest Variable', system-ui, sans-serif; font-weight: 600; font-size: 0.98rem; cursor: pointer; transition: background 0.3s, border-color 0.3s; } .ds-btn-glass:hover { background: rgba(255,178,63,0.16); border-color: rgba(255,178,63,0.5); } .ds-btn-glass:focus-visible { outline: 2px solid #ffb23f; outline-offset: 3px; }"
+    },
+    {
+      "name": "Category Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Filter pill with a mono count; active inverts to ink.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip is-on\">Smartphones <span class=\"ds-chip-count\">3</span></button><button class=\"ds-chip\">Notebooks <span class=\"ds-chip-count\">2</span></button></div>",
+      "css": ".ds-chips { display: flex; gap: 8px; padding: 16px; background: #0e0906; } .ds-chip { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 8px 0 18px; border-radius: 999px; border: 1px solid rgba(255,214,180,0.12); background: rgba(255,226,200,0.055); color: #e9d6c6; font-family: 'Onest Variable', system-ui, sans-serif; font-weight: 500; cursor: pointer; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); } .ds-chip:hover { border-color: rgba(255,214,180,0.22); color: #fff4ea; } .ds-chip:focus-visible { outline: 2px solid #ffb23f; outline-offset: 3px; } .ds-chip-count { min-width: 28px; height: 28px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; font-family: 'Martian Mono Variable', ui-monospace, monospace; font-size: 0.72rem; background: rgba(255,226,200,0.08); } .ds-chip.is-on { background: #fff4ea; color: #1a0e08; border-color: #fff4ea; } .ds-chip.is-on .ds-chip-count { background: #ffb23f; color: #2a1102; }"
+    },
+    {
+      "name": "Glass Nav",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Floating sticky glass pill with centered links and a coin CTA.",
+      "html": "<div class=\"ds-nav-stage\"><nav class=\"ds-nav\"><strong class=\"ds-brand\">VibeGet</strong><ul class=\"ds-nav-links\"><li><a href=\"#\">Vibes</a></li><li><a href=\"#\">Como funciona</a></li><li><a href=\"#\">GetCoin</a></li></ul><a class=\"ds-nav-cta\" href=\"#\">Criar conta</a></nav></div>",
+      "css": ".ds-nav-stage { padding: 24px; background: radial-gradient(60% 120% at 80% 0%, rgba(255,122,26,0.3), transparent 70%), #0e0906; } .ds-nav { display: flex; align-items: center; gap: 24px; height: 68px; padding: 0 12px 0 22px; border-radius: 999px; background: rgba(22,13,9,0.62); border: 1px solid rgba(255,214,180,0.12); border-top-color: rgba(255,214,180,0.22); backdrop-filter: blur(22px) saturate(150%); box-shadow: 0 1px 0 rgba(255,236,214,0.08) inset, 0 24px 60px -24px rgba(0,0,0,0.7); font-family: 'Onest Variable', system-ui, sans-serif; } .ds-brand { color: #fff4ea; font-family: 'Bricolage Grotesque Variable', sans-serif; } .ds-nav-links { display: flex; gap: 4px; list-style: none; margin: 0 auto; padding: 0; } .ds-nav-links a { padding: 8px 14px; border-radius: 999px; color: #e9d6c6; font-size: 0.95rem; text-decoration: none; transition: background 0.3s, color 0.3s; } .ds-nav-links a:hover { background: rgba(255,226,200,0.08); color: #fff4ea; } .ds-nav-links a:focus-visible, .ds-nav-cta:focus-visible { outline: 2px solid #ffb23f; outline-offset: 3px; } .ds-nav-cta { display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 999px; font-weight: 600; font-size: 0.92rem; color: #2a1102; text-decoration: none; background: linear-gradient(180deg, #ffd07a, #ffb23f 45%, #ff7a1a); box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 10px 28px -10px rgba(255,122,26,0.75); }"
+    },
+    {
+      "name": "Live Badge",
+      "kind": "chip",
+      "refersTo": "live-badge",
+      "description": "AO VIVO signal with a pulsing red dot; the only uppercase label in the system.",
+      "html": "<span class=\"ds-live\"><span class=\"ds-live-dot\"></span>Ao vivo</span>",
+      "css": ".ds-live { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: rgba(239,61,54,0.14); color: #ff8a84; font-family: 'Onest Variable', system-ui, sans-serif; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; } .ds-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef3d36; animation: ds-pulse 1.8s infinite; } @keyframes ds-pulse { 0% { box-shadow: 0 0 0 0 rgba(239,61,54,0.6); } 70% { box-shadow: 0 0 0 8px rgba(239,61,54,0); } 100% { box-shadow: 0 0 0 0 rgba(239,61,54,0); } } @media (prefers-reduced-motion: reduce) { .ds-live-dot { animation: none; } }"
+    },
+    {
+      "name": "Vibe Card",
+      "kind": "card",
+      "refersTo": "vibe-card",
+      "description": "Glass card with the product on a cream plate, mono prices and an ember-to-gold meter.",
+      "html": "<div class=\"ds-card-stage\"><article class=\"ds-vibe\"><div class=\"ds-plate\"><div class=\"ds-phone\"></div></div><div class=\"ds-vibe-body\"><h3>iPhone 15 Pro Max 256GB</h3><div class=\"ds-price\"><div><span>Maior Get</span><b>R$ 412,35</b></div><div class=\"ds-right\"><span>Na loja</span><s>R$ 9.299,00</s></div></div><div class=\"ds-meter\"><span style=\"width:62%\"></span></div></div></article></div>",
+      "css": ".ds-card-stage { padding: 32px; background: radial-gradient(50% 60% at 70% 30%, rgba(255,122,26,0.35), transparent 70%), #0e0906; } .ds-vibe { width: 300px; padding: 10px; border-radius: 32px; background: linear-gradient(180deg, rgba(255,226,200,0.09), rgba(255,226,200,0.055) 40%); border: 1px solid rgba(255,214,180,0.12); border-top-color: rgba(255,214,180,0.22); backdrop-filter: blur(22px) saturate(150%); box-shadow: 0 1px 0 rgba(255,236,214,0.08) inset, 0 24px 60px -24px rgba(0,0,0,0.7); color: #fff4ea; font-family: 'Onest Variable', system-ui, sans-serif; transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), border-color 0.4s; } .ds-vibe:hover { transform: translateY(-4px); border-color: rgba(255,178,63,0.35); } .ds-plate { aspect-ratio: 1 / 0.86; border-radius: 20px; display: grid; place-items: center; background: radial-gradient(120% 90% at 50% 25%, #fffaf3, #f3e3d2 70%, #e5c9ae); box-shadow: 0 0 0 1px rgba(255,255,255,0.25) inset; } .ds-phone { width: 34%; height: 70%; border-radius: 18px; background: #6b6259; mix-blend-mode: multiply; } .ds-vibe-body { padding: 16px 8px 8px; display: grid; gap: 16px; } .ds-vibe h3 { margin: 0; font-family: 'Bricolage Grotesque Variable', sans-serif; font-size: 1.15rem; font-weight: 650; letter-spacing: -0.02em; } .ds-price { display: flex; justify-content: space-between; align-items: end; } .ds-price div { display: grid; gap: 2px; } .ds-price span { font-size: 0.86rem; color: #b89f8c; } .ds-price b { font-family: 'Martian Mono Variable', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; } .ds-price s { font-family: 'Martian Mono Variable', ui-monospace, monospace; font-size: 0.82rem; color: #b89f8c; } .ds-right { text-align: right; } .ds-meter { height: 6px; border-radius: 999px; background: rgba(255,226,200,0.1); overflow: hidden; } .ds-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff5a1f, #ffb23f); }"
+    },
+    {
+      "name": "Get Slider",
+      "kind": "input",
+      "refersTo": "wallet-panel",
+      "description": "Range input with a coin-textured thumb and flare-to-gold fill.",
+      "html": "<div class=\"ds-field\"><div class=\"ds-field-row\"><label for=\"ds-cash\">Seu Get em R$</label><output class=\"ds-val\">R$ 160,00</output></div><input id=\"ds-cash\" class=\"ds-range\" type=\"range\" min=\"50\" max=\"600\" value=\"160\" style=\"--p: 20%\"></div>",
+      "css": ".ds-field { display: grid; gap: 10px; padding: 22px; width: 340px; border-radius: 32px; background: #0e0906; font-family: 'Onest Variable', system-ui, sans-serif; } .ds-field-row { display: flex; justify-content: space-between; align-items: baseline; } .ds-field label { color: #e9d6c6; font-size: 0.92rem; } .ds-val { color: #fff4ea; font-family: 'Martian Mono Variable', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 1.5rem; font-weight: 600; } .ds-range { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; border-radius: 999px; margin: 6px 0; background: linear-gradient(90deg, #ff7a1a, #ffb23f var(--p), rgba(255,226,200,0.12) var(--p)); } .ds-range:focus-visible { outline: 2px solid #ffb23f; outline-offset: 3px; } .ds-range::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff0c8, #ffb23f 55%, #b8480b); border: 2px solid #fff3dc; box-shadow: 0 4px 14px rgba(255,122,26,0.6); cursor: grab; } .ds-range::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff3dc; background: radial-gradient(circle at 35% 30%, #fff0c8, #ffb23f 55%, #b8480b); }"
+    },
+    {
+      "name": "GetCoin Toggle",
+      "kind": "input",
+      "refersTo": "wallet-panel",
+      "description": "Tile toggle; the checked track goes flare.",
+      "html": "<label class=\"ds-toggle\"><input type=\"checkbox\" checked><span class=\"ds-switch\"></span><span><b>Turbinar com GetCoin</b><small>Some GetCoin até o mesmo valor pago em R$</small></span></label>",
+      "css": ".ds-toggle { display: flex; gap: 14px; align-items: center; padding: 14px; width: 340px; border-radius: 16px; background: rgba(255,226,200,0.05); border: 1px solid rgba(255,214,180,0.12); color: #fff4ea; font-family: 'Onest Variable', system-ui, sans-serif; cursor: pointer; position: relative; } .ds-toggle input { position: absolute; opacity: 0; pointer-events: none; } .ds-toggle small { display: block; color: #b89f8c; font-size: 0.86rem; } .ds-switch { flex: none; width: 46px; height: 28px; border-radius: 999px; background: rgba(255,226,200,0.16); position: relative; transition: background 0.3s; } .ds-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff4ea; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); } .ds-toggle input:checked + .ds-switch { background: #ff7a1a; } .ds-toggle input:checked + .ds-switch::after { transform: translateX(18px); } .ds-toggle input:focus-visible + .ds-switch { outline: 2px solid #ffb23f; outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Glass Wallet",
+    "overview": "GetCoin is a token and the site is its wallet. The world is a warm near-black floor lit like banked embers, with frosted glass panels floating over pools of amber light and a single cold violet rim far above. Money is physical here: the GetCoin is a minted amber-gold disc, figures are set in tabular monospace, and the one choreographed moment is the coin being struck as the Get changes.\n\nDensity is confident and card-led: large display headlines on the left, instrument-like glass panels on the right, generous section breaks. Everything that can be touched is a pill; everything that holds content is a softly rounded pane. Warmth comes from light, not from fill: surfaces stay dark and translucent, and color arrives as glow, rims, and the coin itself.\n\nProduct photography is never placed raw on the dark floor. It sits on a warm cream plate, like merchandise on a lit pedestal, so real catalog shots read as premium goods inside the wallet world.",
+    "keyCharacteristics": [
+      "Warm ember-black floor with fixed radial light (amber top-right, violet top-left, red low-center).",
+      "Frosted glass panes with a brighter top edge, always with a light source behind them.",
+      "GetCoin gold as the only action color; red strictly a live/win signal.",
+      "Tabular monospace for every amount, timer, and count.",
+      "Pills for controls, 16–40px rounded panes for containers.",
+      "One authored motion: the GetCoin mint."
+    ],
+    "rules": [
+      { "name": "The Red Is Live Rule", "body": "Live Red marks only what is happening now or winning: AO VIVO, closing timers, Champion Get. It never styles a general CTA, a price, or a decoration. At low alpha it may tint background light (atmosphere floor glow, hero glow), never a control.", "section": "colors" },
+      { "name": "The Violet Is Light Rule", "body": "Violet is a light source, not a paint. It lives in the atmosphere, the wallet rim, and the locked tier's tint; it never fills or outlines a button, chip, link, or input.", "section": "colors" },
+      { "name": "The One Coin Rule", "body": "Gold is the only action color. If something is clickable and primary, it is gold; if it is gold and not clickable, it is a GetCoin amount or the coin itself.", "section": "colors" },
+      { "name": "The Ledger Rule", "body": "Any number a user could compare (money, GetCoin, time, count) is set in Martian Mono with tabular figures. Prose numbers in running text are the only exception.", "section": "typography" },
+      { "name": "The Uppercase Is Live Rule", "body": "Tracked uppercase exists only for live labels. Headings carry no eyebrow or kicker above them.", "section": "typography" },
+      { "name": "The Lit Glass Rule", "body": "Glass never sits on a flat floor. A new glass composition gets an ember radial light behind it (a blurred circular pseudo-element, amber at ~0.3–0.42 alpha fading out by 65–70%) so the blur has something to refract.", "section": "elevation" },
+      { "name": "The Warm Shadow Rule", "body": "Only gold and live red cast colored glow. Neutral panels cast black, long, and soft.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do put an ember radial light behind any new glass composition (The Lit Glass Rule).",
+      "Do set every amount, timer, and count in Martian Mono with tabular figures.",
+      "Do make the primary action a gold coin pill, and only one gold pill per group.",
+      "Do place product photos on the cream plate with multiply blend; use a white-ground asset whenever one exists.",
+      "Do keep controls as full pills and containers as 16–40px rounded panes.",
+      "Do reserve the minting motion for moments where GetCoin is actually earned or spent."
+    ],
+    "donts": [
+      "Don't use Live Red on anything that is not live, closing, or a Champion Get (The Red Is Live Rule).",
+      "Don't put violet on a button, chip, link, input, or border of a control (The Violet Is Light Rule).",
+      "Don't place a raw product photo directly on the ember-black floor.",
+      "Don't add eyebrows or kickers above headings; tracked uppercase is for live labels only.",
+      "Don't add new choreographed entrance animations; state transitions use the house ease (cubic-bezier(0.16, 1, 0.3, 1)) at 0.3–0.5s.",
+      "Don't fill large surfaces with opaque color; the gold tier card is the single solid-gold panel."
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <!-- VibeGet hero backdrop: a GetCoin rising over the horizon. Authored for the redesign proposal. -->
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="100%" r="85%">
+      <stop offset="0" stop-color="#7a300f"/>
+      <stop offset=".32" stop-color="#3b1609"/>
+      <stop offset=".62" stop-color="#1a0c07"/>
+      <stop offset="1" stop-color="#0e0906"/>
+    </radialGradient>
+    <radialGradient id="face" cx="50%" cy="0%" r="70%">
+      <stop offset="0" stop-color="#5a2610"/>
+      <stop offset=".25" stop-color="#2a120a"/>
+      <stop offset="1" stop-color="#120906"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8a3a12" stop-opacity="0"/>
+      <stop offset=".3" stop-color="#e67d33"/>
+      <stop offset=".5" stop-color="#f6d08e"/>
+      <stop offset=".7" stop-color="#e67d33"/>
+      <stop offset="1" stop-color="#8a3a12" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="blur-lg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="48"/></filter>
+    <filter id="blur-md" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+    <pattern id="dots" width="36" height="36" patternUnits="userSpaceOnUse">
+      <circle cx="18" cy="18" r="1.2" fill="#fbe2c6"/>
+    </pattern>
+    <radialGradient id="dotfade" cx="50%" cy="72%" r="60%">
+      <stop offset="0" stop-color="#fff" stop-opacity=".5"/>
+      <stop offset=".7" stop-color="#fff" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="dotmask"><rect width="1920" height="1080" fill="url(#dotfade)"/></mask>
+    <clipPath id="above"><rect width="1920" height="830"/></clipPath>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#dots)" opacity=".16" mask="url(#dotmask)" clip-path="url(#above)"/>
+
+  <!-- haze above the horizon -->
+  <ellipse cx="960" cy="840" rx="980" ry="190" fill="#e67d33" opacity=".38" filter="url(#blur-lg)"/>
+  <ellipse cx="960" cy="828" rx="560" ry="70" fill="#f3c47a" opacity=".35" filter="url(#blur-md)"/>
+
+  <!-- the coin -->
+  <circle cx="960" cy="2300" r="1480" fill="url(#face)"/>
+  <circle cx="960" cy="2300" r="1480" fill="none" stroke="url(#rim)" stroke-width="10" opacity=".55" filter="url(#blur-md)"/>
+  <circle cx="960" cy="2300" r="1480" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+  <circle cx="960" cy="2300" r="1400" fill="none" stroke="#eaad53" stroke-opacity=".22" stroke-width="1.5"/>
+  <circle cx="960" cy="2300" r="1320" fill="none" stroke="#eaad53" stroke-opacity=".1" stroke-width="1"/>
+
+</svg>

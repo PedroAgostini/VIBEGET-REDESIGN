@@ -65,7 +65,12 @@ async function getJson(fetchImpl: FetchLike, url: string) {
   return { status: res.status, ok: res.ok, body: res.ok || res.status === 404 ? await res.json().catch(() => null) : null }
 }
 
-const str = (v: unknown) => (typeof v === 'string' ? v : '')
+const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+
+/** Resposta 200 fora do formato esperado conta como falha do provedor, não como endereço vazio. Rua e bairro podem faltar (cidade de CEP único). */
+function validResult(r: CepResult): CepResult | undefined {
+  return r.city && (UFS as readonly string[]).includes(r.state) ? r : undefined
+}
 
 /** undefined = provedor falhou (tenta o próximo); null = CEP inexistente. */
 async function viaCep(f: FetchLike, cep: string): Promise<CepResult | null | undefined> {
@@ -73,7 +78,7 @@ async function viaCep(f: FetchLike, cep: string): Promise<CepResult | null | und
   if (!r.ok || !r.body || typeof r.body !== 'object') return undefined
   const b = r.body as Record<string, unknown>
   if (b.erro === true || b.erro === 'true') return null
-  return { cep, street: str(b.logradouro), district: str(b.bairro), city: str(b.localidade), state: str(b.uf) }
+  return validResult({ cep, street: str(b.logradouro), district: str(b.bairro), city: str(b.localidade), state: str(b.uf) })
 }
 
 async function brasilApi(f: FetchLike, cep: string): Promise<CepResult | null | undefined> {
@@ -81,7 +86,7 @@ async function brasilApi(f: FetchLike, cep: string): Promise<CepResult | null | 
   if (r.status === 404) return null
   if (!r.ok || !r.body || typeof r.body !== 'object') return undefined
   const b = r.body as Record<string, unknown>
-  return { cep, street: str(b.street), district: str(b.neighborhood), city: str(b.city), state: str(b.state) }
+  return validResult({ cep, street: str(b.street), district: str(b.neighborhood), city: str(b.city), state: str(b.state) })
 }
 
 export async function lookupCep(fetchImpl: FetchLike, cep: string): Promise<CepResult> {

@@ -599,6 +599,21 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
   - O banco foi recriado; o corrompido está em `server/.data/pglite-corrompido-2026-09-28-b`. O usuário de teste foi recriado com a mesma senha.
 - **2026-09-28 (builder, D11 + D12)** — Implementados: D11 (compra avulsa em `modules/purchases`, configurações `/admin/settings/getcoin`, `custom` em `GET /getcoin-packages`) e D12 (`modules/market/{core,service,routes}.ts`: anúncio com custódia `MARKET_ESCROW`, cancelamento com `MARKET_ESCROW_RETURN`, pedido com lock no anúncio, pagamento PIX/CARD/BALANCE integrado a `applyPaymentOutcome`/webhook/simulate/job de expiração, liquidação `MARKET_BUY` + `MARKETPLACE_SALE` − `MARKETPLACE_FEE`, PAID tardio estornado, admin com audit, receita de taxas no dashboard). Migração nova `0008_market.sql`. Resultado real: `npm run typecheck` sem erros; `npm test` → **25 arquivos, 446/447** (única falha: QA-22, pré-existente); `0008` aplicada com sucesso numa **cópia** do banco de dev (a API de dev estava rodando; não abri nem matei o PGlite de dev).
 - **2026-09-28 (QA, D11–D12)** — `tests/d11-d12-qa.test.ts` com 65 testes: taxa (unidade e E2E, preço ímpar, 0% e 50%, taxa congelada no pedido), conservação de GetCoin (Σ carteiras + remaining + reservado) e invariantes dos dois livros-razão em todos os cenários, concorrência (compras e reservas paralelas, cancelamento contra FAILED/PAID), PAID/FAILED/expiração/PAID tardio/replay de webhook e simulate, BALANCE insuficiente, IDOR, regras, compra avulsa (preço do servidor, faixa, desligada, crédito único), RBAC/validação/audit das settings, privacidade da lista pública, LGPD. Ordem de locks revisada por leitura: todos os fluxos do marketplace travam o anúncio primeiro, depois pagamento/pedido, carteiras GetCoin e por fim carteiras R$ (em ordem de user_id); compra de pacote e Get com saldo usam GetCoin → R$. Não achei ciclo entre cancelamento e compra. Resultado real: `npm run typecheck` sem erros; `npm test` → **26 arquivos, 512 testes: 509 passando, 3 falhando** (QA-22, que já existia, e os novos QA-23 e QA-24). Nenhum código de `server/src` alterado.
+- **2026-09-29 (front, Marketplace)**
+  - **Migração aplicada:** a `0008` foi aplicada no banco de dev ao reiniciar a API. Os processos antigos foram encerrados à força; a API voltou sem erro, mas o certo continua sendo Ctrl+C.
+  - **Teste ponta a ponta no navegador:** compra avulsa na tela Comprar; no marketplace, compra com BALANCE, compra com PIX + simulate, publicação de anúncio com o recibo da taxa e o Histórico.
+  - **Nova tela `src/pages/dashboard/Market.jsx` (CSS `.mk-*` em `styles.css`):**
+    - régua de resumo com menor preço, preço da loja, anúncios na vitrine e GetCoins do usuário;
+    - anúncios em cartões com iniciais do vendedor, "Menor preço", % contra o preço da loja (`custom.unitPriceCents` de `/getcoin-packages`) e barra do que resta;
+    - só o anúncio mais barato leva o botão dourado; a compra tem atalhos de quantidade e o valor da loja riscado;
+    - a aba Vender tem formulário e recibo lado a lado, atalhos (tudo, metade, igualar o menor, preço da loja) e "Como funciona";
+    - quantidades inteiras ("250", não "250,00");
+    - corrigida a aba "Histórico", que quebrava de linha: `.auth-tabs` tinha só 2 colunas.
+  - **Dados de teste no banco de dev** (senha `TestPassword123456`):
+    - usuários `test1790681145378@`, `test_414434071@`, `marina.mk@` e `rafael.mk@` (todos `vibeget.test`, e-mail confirmado);
+    - pacotes "Pacote 50" e "Pacote 200";
+    - GetCoins e R$ 150 creditados pelo admin com o motivo "Teste visual do marketplace";
+    - 6 anúncios e 2 pedidos pagos.
 
 ## 11. Próximos passos
 
@@ -619,7 +634,7 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 3.3.2. **Front:** usar `/admin/settings/withdrawals` para os limites de saque (desvio da seção 3); tratar `409 CASH_BALANCE` na exclusão de conta.
 3.3.3. **Produção — saque:** o ADMIN paga o Pix fora do sistema e depois aprova. Com gateway real, integrar o pagamento do saque (payout) e conciliação; definir se o limite diário deve ser por dia civil (America/Sao_Paulo) em vez de janela de 24 h.
 3.3.4. **Cliente:** confirmar a interpretação "Vencidas = vitórias" (D9) e os valores iniciais de saque (R$ 10,00 mínimo; R$ 5.000,00 por dia).
-3.4.1. **Aplicar a 0008 no banco de dev:** reiniciar a API (aplica sozinha com `AUTO_MIGRATE`) ou, com ela parada, `npm run db:migrate`.
+3.4.1. ~~Aplicar a 0008 no banco de dev~~ (feito em 2026-09-29).
 3.4.2. **QA — D11/D12:** corrida de vários compradores no mesmo anúncio (nunca `Σ pedidos > total`), conservação de GetCoin, replay de webhook/simulate de pedido, PAID tardio (sobre FAILED e depois do prazo), cancelamento com pendentes, taxa com arredondamento (`floor`), IDOR em pedidos/anúncios, privacidade do vendedor/comprador, limites de configuração.
 3.4.3. **Cliente:** confirmar taxa de 10 %, faixa de preço por GetCoin (R$ 0,10 a R$ 10,00) e mínimo de anúncio (10 GetCoins).
 3.3. Front (telas): fazer o refresh em single-flight (uma renovação por vez, compartilhada entre abas via BroadcastChannel) e, ao receber `409 REFRESH_RACE`, repetir o refresh uma vez (o cookie novo já chegou). Tratar `429 TOO_MANY_ATTEMPTS` na troca de senha e na exclusão de conta.

@@ -16,6 +16,9 @@ export const MOVEMENT = {
   COUPON: 'Cupom',
   PURCHASE: 'Compra de GetCoins',
   PURCHASE_BONUS: 'Bônus da compra',
+  MARKET_ESCROW: 'Anunciado no marketplace',
+  MARKET_ESCROW_RETURN: 'Devolvido do marketplace',
+  MARKET_BUY: 'Compra no marketplace',
 }
 
 export function CopyButton({ value, label, done = 'Copiado' }) {

@@ -1515,33 +1515,117 @@ button.auth-tab { border: 0; background: none; padding: 0 18px; font: inherit; f
 }
 
 /* ============ Marketplace de GetCoins (src/pages/dashboard/Market.jsx) ============ */
-.mk-tabs { margin: 0; min-width: 360px; }
-.mk-lede { margin-top: -6px; max-width: 64ch; }
+.mk { position: relative; isolation: isolate; }
+/* Lit Glass: luz âmbar atrás do resumo e da vitrine */
+.mk::before { content: ''; position: absolute; z-index: -1; left: 8%; top: 120px; width: 84%; height: 520px; border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgba(230, 125, 51, 0.24), transparent 70%); filter: blur(40px); }
+.mk-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; min-width: 390px; }
+
+/* Resumo: quatro números de mercado numa régua de vidro */
+.mk-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border-radius: var(--r-lg); overflow: hidden; }
+.mk-summary > div { display: grid; gap: 6px; min-width: 0; padding: 18px 22px; }
+.mk-summary > div + div { border-left: 1px solid var(--line); }
+.mk-summary dt { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+.mk-summary dd { margin: 0; font-size: clamp(1.5rem, 2.4vw, 1.95rem); line-height: 1.05; color: var(--ink); }
+.mk-summary p { font-size: 0.82rem; color: var(--muted); }
+.mk-summary .af-inline-link { font-size: 0.82rem; }
+.mk-summary-coin { display: flex; align-items: center; gap: 10px; color: var(--coin) !important; }
+.mk-good { color: var(--coin); font-weight: 600; }
+
+/* Vitrine */
+.mk-board { padding: 22px; border-radius: var(--r-lg); display: grid; gap: 14px; }
+.mk-board-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
+.mk-board-sub { margin-top: 4px; font-size: 0.86rem; color: var(--muted); }
 .mk-sort select { height: 40px; font-size: 0.86rem; }
-.mk-list { list-style: none; margin: 0; padding: 0; }
-.mk-item { border-top: 1px solid var(--line); }
-.mk-item:first-child { border-top: 0; }
-.mk-item.is-open { background: rgba(234, 173, 83, 0.04); border-radius: var(--r-sm); }
-.mk-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 18px; padding: 14px 4px; }
-.mk-seller { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mk-price .mono { font-size: 1.05rem; color: var(--ink); }
-.mk-avail { display: inline-flex; align-items: center; gap: 8px; }
-.mk-avail .mono { color: var(--coin); }
-.mk-buy { display: grid; gap: 14px; padding: 4px 4px 18px; overflow: hidden; }
-.mk-buy-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
-.mk-buy-row .af-field { flex: 1; min-width: 200px; max-width: 320px; }
-.mk-buy .db-custom-input input { position: static; opacity: 1; pointer-events: auto; flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; color: var(--coin); font-size: 1.3rem; }
-.mk-buy-total { font-size: 0.94rem; color: var(--ink-2); }
-.mk-buy-total b { margin-left: 8px; font-size: 1.4rem; color: var(--ink); font-weight: 600; }
+.mk-cols, .mk-row { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr) 132px; align-items: center; gap: 20px; }
+.mk-cols { padding: 0 14px; font-size: 0.76rem; font-weight: 600; color: var(--muted); }
+.mk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mk-item { border-radius: var(--r-sm); border: 1px solid var(--line); background: rgba(14, 9, 6, 0.32); transition: border-color 0.3s var(--ease), background 0.3s var(--ease); }
+.mk-item:hover { border-color: var(--line-2); }
+.mk-item.is-best { border-color: rgba(234, 173, 83, 0.4); background: linear-gradient(90deg, rgba(234, 173, 83, 0.09), rgba(14, 9, 6, 0.32) 60%); }
+.mk-item.is-open { border-color: rgba(234, 173, 83, 0.55); background: rgba(234, 173, 83, 0.05); }
+.mk-row { padding: 14px; }
+
+.mk-seller { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mk-avatar { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 50%; background: rgba(255, 226, 200, 0.07); box-shadow: inset 0 0 0 1px var(--line-2); color: var(--ink-2); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em; }
+.mk-avatar.is-mine { background: rgba(234, 173, 83, 0.12); box-shadow: inset 0 0 0 1px rgba(234, 173, 83, 0.4); color: var(--coin); }
+.mk-seller-copy { min-width: 0; }
+.mk-seller-name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-weight: 600; color: var(--ink); }
+.mk-seller-name > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mk-best { display: inline-flex; padding: 2px 9px; border-radius: 999px; background: rgba(234, 173, 83, 0.14); color: var(--coin); font-size: 0.72rem; font-weight: 650; }
+.mk-meta { margin-top: 2px; font-size: 0.8rem; color: var(--muted); }
+
+.mk-price p:first-child, .mk-avail p:first-child { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 4px; }
+.mk-price-num { font-size: 1.12rem; font-weight: 700; color: var(--ink); }
+.mk-unit { font-size: 0.8rem; color: var(--muted); }
+.mk-delta { margin-top: 2px; font-size: 0.78rem; color: var(--muted); }
+.mk-delta.is-good { color: var(--coin); }
+.mk-avail { display: grid; gap: 8px; }
+.mk-avail p:first-child { align-items: center; gap: 0 6px; }
+.mk-avail-num { font-size: 1.02rem; color: var(--coin); }
+.mk-meter { display: block; height: 4px; max-width: 180px; border-radius: 999px; background: rgba(255, 226, 200, 0.1); overflow: hidden; }
+.mk-meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--ember), var(--coin)); transition: width 0.6s var(--ease); }
+.mk-action { display: flex; justify-content: flex-end; }
+.mk-action .btn { min-width: 116px; }
+
+/* Compra aberta dentro do anúncio */
+.mk-buy { display: grid; gap: 16px; margin: 0 14px; padding: 16px 0 18px; border-top: 1px dashed var(--line-2); overflow: hidden; }
+.mk-buy-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 0.8fr); align-items: start; gap: 18px 32px; }
+.mk-buy .af-field { gap: 10px; }
+.mk-buy .db-custom-input input { position: static; opacity: 1; pointer-events: auto; flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; color: var(--coin); font-size: 1.3rem; caret-color: var(--coin); }
+.mk-buy-ledger { padding: 16px 18px; border-radius: var(--r-sm); background: rgba(14, 9, 6, 0.45); border: 1px solid var(--line); }
+.mk-save dd { color: var(--muted); }
+.mk-buy .db-method-bal { font-size: 0.76rem; }
 .mk-buy-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .mk-buy-actions .af-submit { width: auto; min-width: 240px; margin-top: 0; }
-.mk-ledger { max-width: 420px; }
+.vd-quick-btn:disabled { opacity: 0.5; cursor: default; }
+
+.mk-empty { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 8px 4px; }
+.mk-empty > .dash-coin { width: 44px; height: 44px; }
+.mk-empty-title { font-weight: 650; color: var(--ink); }
+.mk-empty-copy { margin-top: 2px; max-width: 58ch; font-size: 0.88rem; line-height: 1.5; color: var(--muted); }
+.mk-empty-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+/* Vender: formulário à esquerda, recibo à direita */
+.mk-sell { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr); gap: 18px; align-items: stretch; }
+.mk-sell-form { gap: 18px; }
+.mk-sell-field { display: grid; gap: 10px; }
+.mk-receipt { display: grid; align-content: start; gap: 18px; padding: 24px; border-radius: var(--r-lg); }
+.mk-receipt .vd-ledger-total dd { font-size: 1.5rem; color: var(--coin); }
+.mk-steps { list-style: none; margin: 0; padding: 16px 0 0; display: grid; gap: 14px; border-top: 1px solid var(--line); }
+.mk-steps li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: baseline; font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
+.mk-steps li > span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(234, 173, 83, 0.4); color: var(--coin); font-size: 0.78rem; }
+.mk-steps b { color: var(--ink-2); font-weight: 600; }
+.mk-row-mine { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto 132px; }
+.mk-mine-figs { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.82rem; color: var(--muted); }
+.mk-mine-figs b { color: var(--ink); font-weight: 400; }
+
+@media (max-width: 1000px) {
+  .mk-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mk-summary > div:nth-child(3) { border-left: 0; }
+  .mk-summary > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .mk-sell { grid-template-columns: 1fr; }
+}
 @media (max-width: 760px) {
   .mk-tabs { min-width: 0; width: 100%; }
-  .mk-row { grid-template-columns: 1fr auto; row-gap: 8px; }
+  .mk-board { padding: 16px; }
+  .mk-cols { display: none; }
+  .mk-row, .mk-row-mine { grid-template-columns: minmax(0, 1fr) auto; gap: 12px 16px; }
   .mk-seller { grid-column: 1 / -1; }
+  .mk-action { grid-column: 1 / -1; }
+  .mk-action .btn { width: 100%; }
+  .mk-row-mine .mk-avail { grid-column: 1 / -1; }
+  .mk-meter { max-width: none; }
+  .mk-buy { margin: 0 12px; }
+  .mk-buy-grid { grid-template-columns: 1fr; }
   .mk-buy-actions { flex-direction: column-reverse; }
   .mk-buy-actions .af-submit, .mk-buy-actions .btn { width: 100%; }
+  .mk-empty { grid-template-columns: auto minmax(0, 1fr); }
+  .mk-empty-actions { grid-column: 1 / -1; justify-content: stretch; }
+  .mk-empty-actions .btn { flex: 1; }
+}
+@media (max-width: 480px) {
+  .mk-summary > div { padding: 14px 16px; }
+  .mk-summary dd { font-size: 1.3rem; }
 }
 
 /* ============ Página da Vibe (src/pages/Vibe.jsx) ============ */

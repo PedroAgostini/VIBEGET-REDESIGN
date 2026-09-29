@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Check, CircleNotch, MapPin, Package, Trophy, Truck } from '@phosphor-icons/react'
+import { ArrowRight, Check, CircleNotch, MapPin, Package, Trophy, Truck } from '@phosphor-icons/react'
 import { api, brl, fieldErrors } from '../../lib/api.js'
-import { useApi } from '../../lib/useApi.js'
 import { useAuth } from '../../lib/auth.jsx'
 import { Field, FormAlert, Submit } from '../../components/form.jsx'
 import { CopyButton } from './Home.jsx'
@@ -239,24 +238,25 @@ function PrizeCard({ prize: initial }) {
   )
 }
 
-/** Prêmios do usuário (Champion Gets) com a entrega. Não aparece para quem nunca venceu. */
-export default function PrizesSection() {
-  const prizes = useApi('/me/prizes')
+/** Prêmios do usuário (Champion Gets) com a entrega. `prizes` é o resultado de useApi('/me/prizes'). */
+export default function PrizesSection({ prizes }) {
   const rows = prizes.data?.data ?? []
-  const { hash } = useLocation()
-  const ref = useRef(null)
-  useEffect(() => {
-    if (hash === '#premios' && rows.length) ref.current?.scrollIntoView({ block: 'start' })
-  }, [hash, rows.length])
-  if (prizes.loading && !prizes.data) return <Skeleton lines={2} />
+  if (prizes.loading && !prizes.data) return <Skeleton lines={3} />
   if (prizes.error) return <LoadError message={prizes.error} onRetry={prizes.reload} />
-  if (rows.length === 0) return null
+  if (rows.length === 0) {
+    return (
+      <section className="dg-onboarding glass" aria-labelledby="pz-empty-title">
+        <Trophy size={34} weight="duotone" className="dg-trophy" aria-hidden="true" />
+        <div className="dg-onboarding-copy">
+          <h2 id="pz-empty-title" className="dh-section-title">Seus prêmios aparecem aqui</h2>
+          <p className="dh-text">Quando o seu Get for o maior no fim de uma Vibe, o produto é seu. Você confirma o endereço e acompanha a entrega por esta tela.</p>
+        </div>
+        <Link className="btn btn-coin" to="/vibes">Explorar Vibes<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
+      </section>
+    )
+  }
   return (
-    <section className="dg-section" id="premios" ref={ref} aria-labelledby="pz-title">
-      <h2 id="pz-title" className="dh-section-title">
-        <Trophy size={20} weight="fill" className="dg-trophy" aria-hidden="true" />
-        Seus prêmios <span className="mono dg-count">{rows.length}</span>
-      </h2>
+    <section className="dg-section" aria-label="Seus prêmios">
       <ul className="pz-list">{rows.map((p) => <PrizeCard key={p.id} prize={p} />)}</ul>
     </section>
   )

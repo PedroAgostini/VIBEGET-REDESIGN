@@ -1303,6 +1303,10 @@ button.auth-tab { border: 0; background: none; padding: 0 18px; font: inherit; f
 .dg-pill-off { border: 1px solid var(--line-2); color: var(--muted); }
 .dg-pill-lead { background: rgba(217, 72, 63, 0.16); color: #ff8a84; }
 .dg-heart { color: var(--coin); }
+.dg-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; min-width: 520px; }
+.dg-tabs .auth-tab-label { display: inline-flex; align-items: center; gap: 6px; }
+.dg-tab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 2px rgba(217, 72, 63, 0.25); }
+.dg-panel { display: grid; gap: 18px; }
 .dg-count-soft { background: rgba(255, 226, 200, 0.08); color: var(--ink-2); }
 
 /* Prêmios (D13): Champion Get é vitória, então o vermelho é permitido aqui */
@@ -1477,6 +1481,8 @@ button.auth-tab { border: 0; background: none; padding: 0 18px; font: inherit; f
   .dg-onboarding .btn { grid-column: 2; justify-self: start; }
   .db-method-row { grid-template-columns: 1fr; }
   .dw-tabs { min-width: 0; width: 100%; }
+  .dg-tabs { min-width: 0; width: 100%; }
+  .dg-tabs button.auth-tab { padding: 0 6px; font-size: 0.82rem; }
   .dw-balance { grid-template-columns: 1fr; gap: 18px; }
   .dw-balance .btn { width: 100%; }
 }

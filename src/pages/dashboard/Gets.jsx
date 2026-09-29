@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { ArrowRight, ArrowUpRight, Gavel, Heart, Trophy } from '@phosphor-icons/react'
 import { brl, coins } from '../../lib/api.js'
 import { useApi } from '../../lib/useApi.js'
@@ -11,18 +12,18 @@ function FavoritesSection({ now }) {
   const fav = useApi('/me/favorites/vibes')
   const list = fav.data?.data ?? []
   return (
-    <section className="dg-section" aria-labelledby="dg-fav-title">
-      <h2 id="dg-fav-title" className="dh-section-title">
-        <Heart size={20} weight="fill" className="dg-heart" aria-hidden="true" />
-        Vibes favoritas {list.length ? <span className="mono dg-count dg-count-soft">{list.length}</span> : null}
-      </h2>
+    <section className="dg-section" aria-label="Vibes favoritas">
       {fav.error ? <LoadError message={fav.error} onRetry={fav.reload} />
-        : fav.loading && !fav.data ? <Skeleton lines={2} />
+        : fav.loading && !fav.data ? <Skeleton lines={3} />
           : list.length === 0 ? (
-            <div className="dg-inline-empty">
-              <p className="dg-inline-empty-title">Nenhuma favorita ainda</p>
-              <p>Toque no coração na página de uma Vibe para guardá-la aqui.</p>
-            </div>
+            <section className="dg-onboarding glass" aria-label="Nenhuma favorita ainda">
+              <Heart size={34} weight="duotone" className="dg-heart" aria-hidden="true" />
+              <div className="dg-onboarding-copy">
+                <h2 className="dh-section-title">Nenhuma favorita ainda</h2>
+                <p className="dh-text">Toque no coração na página de uma Vibe para acompanhar ela daqui.</p>
+              </div>
+              <Link className="btn btn-glass" to="/vibes">Ver Vibes<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
+            </section>
           ) : (
             <div className={`vibe-grid vp-grid n-${Math.min(list.length, 4)}`}>
               {list.map((v) => <VibeCard key={v.id} v={v} now={now} />)}
@@ -80,69 +81,56 @@ function LeadingCard({ item, now }) {
   )
 }
 
-export default function Gets() {
-  const [page, setPage] = useState(1)
-  const summary = useApi('/me/gets/summary')
-  const leading = useApi('/me/gets/leading')
-  const history = useApi(`/me/gets?page=${page}&pageSize=15`)
-  const now = useNow()
-  const s = summary.data?.data ?? summary.data
-  const leadList = leading.data?.data ?? []
-  const rows = history.data?.data ?? []
-  const firstGet = Boolean(
-    s && s.participated === 0 && leading.data && history.data
-    && !leading.error && !history.error && leadList.length === 0 && rows.length === 0,
-  )
-
+function ExploreCta({ title, text }) {
   return (
-    <div className="dp">
-      <PageHead title="Meus Gets" />
+    <section className="dg-onboarding glass" aria-label={title}>
+      <Gavel size={34} weight="duotone" aria-hidden="true" />
+      <div className="dg-onboarding-copy">
+        <h2 className="dh-section-title">{title}</h2>
+        <p className="dh-text">{text}</p>
+      </div>
+      <Link className="btn btn-coin" to="/vibes">Explorar Vibes<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
+    </section>
+  )
+}
 
-      {summary.error ? <LoadError message={summary.error} onRetry={summary.reload} />
-        : summary.loading && !summary.data ? (
-          <section className="dg-stats-loading glass" aria-label="Carregando resumo dos Gets"><Skeleton lines={2} /></section>
-        ) : (
-          <dl className="dg-stats glass">
-            <div className="dg-stat"><dt>Participadas</dt><dd className="mono">{s ? s.participated : '—'}</dd><p>Vibes com pelo menos um Get</p></div>
-            <div className="dg-stat"><dt>Ativas</dt><dd className="mono">{s ? s.active : '—'}</dd><p>Seus Gets em disputas ao vivo</p></div>
-            <div className="dg-stat"><dt>Vencidas</dt><dd className="mono">{s ? s.won : '—'}</dd><p>Champion Gets conquistados</p></div>
-          </dl>
-        )}
-
-      <PrizesSection />
-
-      {firstGet ? (
-        <section className="dg-onboarding glass" aria-labelledby="dg-first-title">
-          <Gavel size={34} weight="duotone" aria-hidden="true" />
-          <div className="dg-onboarding-copy">
-            <h2 id="dg-first-title" className="dh-section-title">Seu primeiro Get começa em uma Vibe aberta</h2>
-            <p className="dh-text">Escolha um produto, defina o valor do seu Get e entre na disputa. Depois, todo o acompanhamento aparece aqui.</p>
+function DisputeTab({ now, summary }) {
+  const leading = useApi('/me/gets/leading')
+  const leadList = leading.data?.data ?? []
+  if (summary && summary.participated === 0) {
+    return <ExploreCta title="Seu primeiro Get começa em uma Vibe aberta" text="Escolha um produto, defina o valor do seu Get e entre na disputa. Depois, todo o acompanhamento aparece aqui." />
+  }
+  if (leading.error) return <LoadError message={leading.error} onRetry={leading.reload} />
+  if (leading.loading && !leading.data) return <Skeleton lines={3} />
+  return (
+    <>
+      <section className="dg-section" aria-labelledby="dg-lead-title">
+        <h2 id="dg-lead-title" className="dh-section-title">
+          <Trophy size={20} weight="fill" className="dg-trophy" aria-hidden="true" />
+          Você está vencendo <span className="mono dg-count">{leadList.length}</span>
+        </h2>
+        {leadList.length === 0 ? (
+          <div className="dg-inline-empty">
+            <p className="dg-inline-empty-title">Nenhuma liderança agora</p>
+            <p>{summary?.active ? 'Alguém passou o seu Get. Dê um Get maior para voltar à frente.' : 'Quando o seu Get for o maior de uma Vibe ao vivo, ela aparece aqui.'}</p>
           </div>
-          <Link className="btn btn-coin" to="/vibes">Explorar Vibes<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
-        </section>
-      ) : (
-        <>
-          <section className="dg-section" aria-labelledby="dg-lead-title">
-            <h2 id="dg-lead-title" className="dh-section-title">
-              <Trophy size={20} weight="fill" className="dg-trophy" aria-hidden="true" />
-              Você está vencendo {s ? <span className="mono dg-count">{s.leading}</span> : null}
-            </h2>
-            {leading.error ? <LoadError message={leading.error} onRetry={leading.reload} />
-              : leading.loading && !leading.data ? <Skeleton lines={2} />
-                : leadList.length === 0 ? (
-                  <div className="dg-inline-empty">
-                    <p className="dg-inline-empty-title">Nenhuma liderança agora</p>
-                    <p>Quando o seu Get for o maior de uma Vibe ao vivo, ela aparece aqui.</p>
-                  </div>
-                ) : (
-                  <ul className="dg-leads">{leadList.map((item) => <LeadingCard key={item.vibe.id} item={item} now={now} />)}</ul>
-                )}
-          </section>
+        ) : (
+          <ul className="dg-leads">{leadList.map((item) => <LeadingCard key={item.vibe.id} item={item} now={now} />)}</ul>
+        )}
+      </section>
+      {summary && summary.active === 0 && (
+        <ExploreCta title="Nenhuma disputa ao vivo" text="Você não tem Gets em Vibes abertas agora. Escolha um produto e volte para a disputa." />
+      )}
+    </>
+  )
+}
 
-          <FavoritesSection now={now} />
-
-          <section className="dg-history glass" aria-labelledby="dg-hist-title">
-            <h2 id="dg-hist-title" className="dh-section-title">Histórico de Gets</h2>
+function HistoryTab() {
+  const [page, setPage] = useState(1)
+  const history = useApi(`/me/gets?page=${page}&pageSize=15`)
+  const rows = history.data?.data ?? []
+  return (
+          <section className="dg-history glass" aria-label="Histórico de Gets">
             {history.error ? <LoadError message={history.error} onRetry={history.reload} />
               : history.loading && !history.data ? <Skeleton lines={5} />
                 : rows.length === 0 ? (
@@ -198,8 +186,69 @@ export default function Gets() {
                 )}
             {rows.length > 0 ? <Pager meta={history.data?.meta} onPage={setPage} /> : null}
           </section>
-        </>
-      )}
+  )
+}
+
+const TABS = [['disputa', 'Em disputa'], ['premios', 'Prêmios'], ['favoritas', 'Favoritas'], ['historico', 'Histórico']]
+
+export default function Gets() {
+  const [params, setParams] = useSearchParams()
+  const tabRefs = useRef(new Map())
+  const tab = TABS.some(([id]) => id === params.get('aba')) ? params.get('aba') : 'disputa'
+  const summaryRes = useApi('/me/gets/summary')
+  const prizes = useApi('/me/prizes')
+  const now = useNow()
+  const s = summaryRes.data?.data ?? summaryRes.data
+  const awaiting = (prizes.data?.data ?? []).filter((p) => p.status === 'AWAITING_ADDRESS').length
+
+  const selectTab = (id) => setParams(id === 'disputa' ? {} : { aba: id }, { replace: true })
+  const onTabKeyDown = (event, index) => {
+    const keys = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: TABS.length - 1 }
+    if (!(event.key in keys)) return
+    event.preventDefault()
+    const id = TABS[(keys[event.key] + TABS.length) % TABS.length][0]
+    selectTab(id)
+    tabRefs.current.get(id)?.focus()
+  }
+
+  return (
+    <div className="dp">
+      <PageHead title="Meus Gets">
+        <div className="auth-tabs dg-tabs" role="tablist" aria-label="Meus Gets">
+          {TABS.map(([id, label], index) => (
+            <button
+              key={id} id={`dg-tab-${id}`} type="button" role="tab" aria-selected={tab === id} aria-controls={`dg-panel-${id}`}
+              tabIndex={tab === id ? 0 : -1} className="auth-tab"
+              ref={(node) => (node ? tabRefs.current.set(id, node) : tabRefs.current.delete(id))}
+              onClick={() => selectTab(id)} onKeyDown={(event) => onTabKeyDown(event, index)}
+            >
+              {tab === id && <motion.span layoutId="dg-tab-pill" className="auth-tab-pill" transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} />}
+              <span className="auth-tab-label">
+                {label}
+                {id === 'premios' && awaiting > 0 && <span className="dg-tab-dot" aria-label={`${awaiting} aguardando endereço`} />}
+              </span>
+            </button>
+          ))}
+        </div>
+      </PageHead>
+
+      {summaryRes.error ? <LoadError message={summaryRes.error} onRetry={summaryRes.reload} />
+        : summaryRes.loading && !summaryRes.data ? (
+          <section className="dg-stats-loading glass" aria-label="Carregando resumo dos Gets"><Skeleton lines={2} /></section>
+        ) : (
+          <dl className="dg-stats glass">
+            <div className="dg-stat"><dt>Participadas</dt><dd className="mono">{s ? s.participated : '—'}</dd><p>Vibes com pelo menos um Get</p></div>
+            <div className="dg-stat"><dt>Ativas</dt><dd className="mono">{s ? s.active : '—'}</dd><p>Seus Gets em disputas ao vivo</p></div>
+            <div className="dg-stat"><dt>Vencidas</dt><dd className="mono">{s ? s.won : '—'}</dd><p>Champion Gets conquistados</p></div>
+          </dl>
+        )}
+
+      <div id={`dg-panel-${tab}`} role="tabpanel" aria-labelledby={`dg-tab-${tab}`} className="dg-panel">
+        {tab === 'disputa' && <DisputeTab now={now} summary={s} />}
+        {tab === 'premios' && <PrizesSection prizes={prizes} />}
+        {tab === 'favoritas' && <FavoritesSection now={now} />}
+        {tab === 'historico' && <HistoryTab />}
+      </div>
     </div>
   )
 }

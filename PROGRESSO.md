@@ -678,6 +678,12 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - **Teste do QA alterado:** em `tests/lgpd.test.ts › anonimiza dados pessoais…`, o usuário era o único a dar Get, vencia a Vibe e agora esbarraria no `PRIZE_OPEN`. Entrou um concorrente com Get maior para o teste continuar verificando a anonimização; nenhuma asserção mudou. **QA: revisar.**
     - Também em Meus Gets: o "Explorar Vibes" apontava para o site antigo (`https://vibeget.net/leiloes`) e passou para `/vibes`.
     - Testado no navegador: vitória na `vibe-teste-premio`, aviso no Início, confirmação com busca de CEP, envio pelo admin via API (Correios, QB123456789BR), rastreio na tela, favoritar pelo coração e compra do Pacote 50 no histórico, no desktop e no celular.
+  - **Meus Gets em subtelas:**
+    - abas `Em disputa` (padrão), `Prêmios` (`?aba=premios`), `Favoritas` e `Histórico`, com navegação pelas setas do teclado;
+    - os números ficam no topo de todas;
+    - ponto vermelho em Prêmios quando há prêmio aguardando endereço;
+    - cada aba tem estado vazio com link para `/vibes`;
+    - o aviso do Início abre `?aba=premios`.
   - **API de dev reiniciada sem matar o processo:** foi enviado Ctrl+C (SIGINT) ao console dela por um processo auxiliar (`AttachConsole` + `GenerateConsoleCtrlEvent`), e o log registrou "encerrando SIGINT".
 
 ## 11. Próximos passos

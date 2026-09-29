@@ -164,7 +164,7 @@ export default function Home() {
             </h2>
             <p className="dh-text">Confirme o endereço de entrega para a gente enviar o seu prêmio.</p>
           </div>
-          <Link to="/dashboard/gets#premios" className="btn btn-coin">Confirmar endereço<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
+          <Link to="/dashboard/gets?aba=premios" className="btn btn-coin">Confirmar endereço<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
         </section>
       )}
 

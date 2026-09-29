@@ -43,7 +43,6 @@ export default function Overview() {
   if (dashboard.error) return <LoadError message={dashboard.error} onRetry={dashboard.reload} />
   if (!d) return <Skeleton lines={6} />
   const p = d.pending
-  const waiting = [p.withdrawals.count, p.prizesToShip].filter((n) => n > 0).length
   const vibeTotal = VIBE_STATUS.reduce((a, [id]) => a + (d.vibes.byStatus[id] ?? 0), 0)
   const balance = d.getcoin.issuedCents - d.getcoin.spentCents
   const spentPct = d.getcoin.issuedCents ? Math.round((d.getcoin.spentCents / d.getcoin.issuedCents) * 100) : 0
@@ -53,9 +52,6 @@ export default function Overview() {
       <header className="ad-hero">
         <p className="ad-hero-date">{today.format(new Date())}</p>
         <h1 className="dp-title">Visão geral</h1>
-        <p className="ad-hero-sub">
-          {waiting === 0 ? 'Tudo em dia: nenhum saque ou envio esperando.' : `${waiting === 1 ? 'Uma fila espera' : 'Duas filas esperam'} a equipe hoje.`}
-        </p>
       </header>
 
       <section className="ad-section" aria-labelledby="ad-todo-title">

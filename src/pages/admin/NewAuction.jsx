@@ -255,7 +255,6 @@ export default function NewAuction() {
       <PageHead title="Novo leilão">
         <Link to="/admin/vibes" className="ad-site-link"><ArrowLeft size={16} aria-hidden="true" />Voltar para Vibes</Link>
       </PageHead>
-      <p className="dh-text ad-lede">Cadastre o produto e a disputa de uma vez. Tudo é salvo junto: se algo der errado, nada fica pela metade.</p>
 
       <form className="na" onSubmit={submit} noValidate aria-label="Cadastro de leilão">
         <div className="na-main">

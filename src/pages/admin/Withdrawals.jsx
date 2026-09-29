@@ -118,7 +118,6 @@ export default function Withdrawals() {
   return (
     <div className="dp">
       <PageHead title="Saques" />
-      <p className="dh-text ad-lede">O usuário pede o saque e o valor sai do saldo dele na hora. Você faz o Pix e marca como pago, ou recusa e o valor volta para o saldo.</p>
       {!isAdmin && <ReadOnlyNote />}
       <FilterChips label="Filtrar saques" options={FILTERS} value={status} onChange={(s) => { setStatus(s); setPage(1) }} counts={{ PENDING: pendingCount }} />
       {list.error ? <LoadError message={list.error} onRetry={list.reload} />

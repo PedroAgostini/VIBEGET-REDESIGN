@@ -127,7 +127,6 @@ export default function AdminVibes() {
       <PageHead title="Vibes">
         {isAdmin && <Link to="/admin/vibes/nova" className="btn btn-coin"><Plus size={18} weight="bold" aria-hidden="true" />Novo leilão</Link>}
       </PageHead>
-      <p className="dh-text ad-lede">O encerramento acontece sozinho no fim do prazo. Aqui você acompanha as disputas e, se precisar, encerra antes ou cancela.</p>
       {!isAdmin && <ReadOnlyNote />}
       <FilterChips label="Filtrar Vibes" options={FILTERS} value={status} onChange={(s) => { setStatus(s); setPage(1) }} counts={byStatus} />
       {list.error ? <LoadError message={list.error} onRetry={list.reload} />

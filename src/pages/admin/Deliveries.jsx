@@ -159,7 +159,6 @@ export default function Deliveries() {
   return (
     <div className="dp">
       <PageHead title="Entregas de prêmio" />
-      <p className="dh-text ad-lede">Quando uma Vibe encerra, o vencedor confirma o endereço. Você envia o produto, registra o rastreio e marca a entrega. O vencedor acompanha tudo em Meus Gets.</p>
       {!isAdmin && <ReadOnlyNote />}
       <FilterChips
         label="Filtrar entregas" options={FILTERS} value={status} onChange={(s) => { setStatus(s); setPage(1) }}

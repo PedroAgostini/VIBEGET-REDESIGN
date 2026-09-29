@@ -692,6 +692,19 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - **Backend:** `GET /admin/dashboard` ganhou `pending = { withdrawals: { count, totalCents }, prizesToShip, prizesAwaitingAddress }`. Teste novo em `d13-prizes.test.ts`; suíte **520/520**.
     - **Testado no navegador** (admin em contexto isolado): pagar o saque de R$ 20, corrigir rastreio, entregar o prêmio e encerrar a `vibe-teste-admin` (criada para o teste, encerrou sem vencedor); usuário comum barrado em `/admin`.
     - **Notado:** se a API está fora do ar no carregamento, a renovação da sessão falha e o front trata como deslogado (vai para `/login`). Era assim antes; vale tentar de novo com erro de rede em vez de deslogar.
+  - **Queda do drive `D:` (~18:30 UTC):**
+    - o disco sumiu com a API e o Vite rodando. O código estava todo no GitHub (`85ebcd0`);
+    - a API perdeu os descritores do PGlite ("could not seek to end of file") e foi parada com Ctrl+C;
+    - o banco foi copiado para `server/.data/pglite-backup-queda-drive-2026-09-29` e reaberto sem erro. Nada se perdeu: saque pago, prêmio entregue e Vibe encerrada conferidos;
+    - o Vite também perdeu a observação dos arquivos e servia o `main.jsx` antigo; foi reiniciado.
+  - **Painel `/admin`, fase 2 (parte 1): cadastro de leilão** em `/admin/vibes/nova` (botão "Novo leilão" em Vibes, só ADMIN):
+    - produto (nome, categoria, marca, modelo, preço, descrição, ficha técnica);
+    - fotos com upload real (`upload()` novo em `src/lib/api.js`, multipart para `/admin/uploads`), escolha da capa e remoção;
+    - disputa: situação ao vivo/agendada/rascunho, início e fim com atalhos de 3/7/15 dias, Get mínimo, meta, cashback (vazio = padrão de `/admin/settings`), benefícios extras e endereço gerado do nome;
+    - prévia ao vivo com o `VibeCard` da vitrine;
+    - envio único em `POST /admin/auctions`.
+    - Em Vibes, rascunho ganhou "Agendar" e "Publicar agora", e agendada ganhou "Abrir agora" (`PATCH` com `status` e `startsAt`).
+    - Testado: cadastro com 2 fotos e troca de capa, gravação conferida pela API, publicar o rascunho, página pública com as fotos, cancelar. O produto de teste ficou cancelado.
   - **API de dev reiniciada sem matar o processo:** foi enviado Ctrl+C (SIGINT) ao console dela por um processo auxiliar (`AttachConsole` + `GenerateConsoleCtrlEvent`), e o log registrou "encerrando SIGINT".
 
 ## 11. Próximos passos
@@ -723,7 +736,7 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 6. ~~Cliente precisa definir bônus~~ (D3: o ADMIN define em `/admin/settings`). Ainda pendente do cliente: preços reais dos 4 produtos estimados e se `goal_gets` encerra a Vibe.
 7. ~~Telas `/login` e `/cadastro`~~ (feito em 2026-09-25, ver seção 13). Próximo no front:
    - 7.1 ~~Dashboard completo~~ (feito; em 2026-09-29 entraram o resgate de cupom, a exportação, a exclusão de conta, sair de todos os dispositivos e os limites de saque).
-   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). **Falta:** cadastro de leilão com upload (D5) e edição de produto/Vibe, usuários (papel, suspensão, ajustes de GetCoin e R$), pacotes de GetCoin, cupons (D4), configurações (D3, saques, GetCoin, marketplace), supervisão do marketplace e audit log.
+   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). ~~Cadastro de leilão com upload (D5)~~ (feito em 2026-09-29). **Falta:** edição de produto/Vibe já criados, usuários (papel, suspensão, ajustes de GetCoin e R$), pacotes de GetCoin, cupons (D4), configurações (D3, saques, GetCoin, marketplace), supervisão do marketplace e audit log.
    - 7.2.1 Cliente: confirmar a regra D13 (bloquear exclusão de conta com prêmio a receber; endereço editável até o envio) e se haverá prazo para o vencedor confirmar o endereço.
    - 7.3 Tela de Vibe (`/produto/:slug`) com o botão de Get, usando `getsCloseAt` e tratando `409 VIBE_CLOSING`.
    - 7.4 ~~Refresh entre abas~~ (feito em 2026-09-29 com Web Locks e BroadcastChannel).

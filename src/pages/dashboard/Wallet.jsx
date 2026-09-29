@@ -127,6 +127,61 @@ function CouponForm({ onRedeemed }) {
   )
 }
 
+const PURCHASE_STATUS = { PENDING_PAYMENT: ['Aguardando pagamento', 'wait'], PAID: ['Pago', 'ok'], FAILED: ['Não concluída', 'off'], REFUNDED: ['Estornada', 'off'] }
+const METHOD_LABEL = { PIX: 'Pix', CARD: 'Cartão', BALANCE: 'Saldo' }
+
+function PurchasesHistory() {
+  const [page, setPage] = useState(1)
+  const res = useApi(`/me/getcoin-purchases?page=${page}&pageSize=10`)
+  const rows = res.data?.data ?? []
+  if (res.error) return <LoadError message={res.error} onRetry={res.reload} />
+  if (!rows.length) return null
+  return (
+    <section className="dg-history glass" aria-labelledby="dw-buys-title">
+      <div className="dh-block-head">
+        <h2 id="dw-buys-title" className="dh-section-title">Suas compras de GetCoins</h2>
+        <Link to="/dashboard/comprar" className="af-inline-link">Comprar mais</Link>
+      </div>
+      <div className="dg-table-wrap">
+        <table className="dg-table">
+          <thead>
+            <tr>
+              <th scope="col">Compra</th>
+              <th scope="col">Data</th>
+              <th scope="col" className="num">GetCoins</th>
+              <th scope="col" className="num">Preço</th>
+              <th scope="col">Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((p) => {
+              const [label, tone] = PURCHASE_STATUS[p.status] ?? [p.status, 'off']
+              const date = dateFmt.format(new Date(p.createdAt))
+              return (
+                <tr key={p.id}>
+                  <th scope="row">
+                    {p.package.name}
+                    <span className="dg-vibe-status">{METHOD_LABEL[p.method] ?? p.method}</span>
+                    <span className="mono dg-mobile-date">{date}</span>
+                  </th>
+                  <td className="mono dg-date">{date}</td>
+                  <td className="mono num dw-in">
+                    +{coins(p.package.getcoinsCents)}
+                    {p.package.bonusCents ? <span className="dg-vibe-status">+{coins(p.package.bonusCents)} de bônus</span> : null}
+                  </td>
+                  <td className="mono num">{brl(p.package.priceCents)}</td>
+                  <td><span className={`dg-pill dg-pill-${tone}`}>{label}</span></td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <Pager meta={res.data?.meta} onPage={setPage} />
+    </section>
+  )
+}
+
 function GetcoinTab() {
   const [page, setPage] = useState(1)
   const wallet = useApi(`/me/wallet?page=${page}&pageSize=20`)
@@ -143,6 +198,7 @@ function GetcoinTab() {
         <Link to="/dashboard/comprar" className="btn btn-coin">Comprar GetCoins<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
       </section>
       <CouponForm onRedeemed={wallet.reload} />
+      <PurchasesHistory />
       <section className="dg-history glass" aria-labelledby="dw-gc-title">
         <h2 id="dw-gc-title" className="dh-section-title">Extrato de GetCoin</h2>
         {wallet.error ? <LoadError message={wallet.error} onRetry={wallet.reload} />

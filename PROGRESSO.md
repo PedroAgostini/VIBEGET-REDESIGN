@@ -169,6 +169,10 @@ Todas as tabelas com `id uuid` (gerado no app), `created_at`, `updated_at` quand
 - _(D12)_ **market_listings**: seller_id, unit_price_cents (> 0), total_cents (> 0, múltiplo de 100), remaining_cents (0..total, múltiplo de 100), status (`ACTIVE|SOLD_OUT|CANCELLED`). **market_orders**: listing_id, buyer_id, seller_id (CHECK comprador ≠ vendedor), getcoins_cents (múltiplo de 100), unit_price_cents, total_price_cents (CHECK = GetCoins/100 × unitário), fee_cents + seller_net_cents = total (CHECK), method, status (`PENDING_PAYMENT|PAID|FAILED|REFUNDED`), idempotency_key (`UNIQUE(buyer_id, idempotency_key)`).
 - _(D12)_ **payments.order_id** (UNIQUE) e novo `payments_one_target_ck`: exatamente um entre get_id, purchase_id e order_id. **getcoin_ledger.type** ganhou `MARKET_ESCROW`, `MARKET_ESCROW_RETURN` e `MARKET_BUY`.
 - _(D11)_ **getcoin_purchases.package_id** agora é opcional (null = compra avulsa, `package_name = "Avulso"`).
+- _(D13)_ **prize_deliveries**:
+  - colunas: vibe_id (UNIQUE), get_id, user_id, status (`AWAITING_ADDRESS|PREPARING|SHIPPED|DELIVERED`), cópia do endereço (recipient_name, phone, cep, street, number, complement, district, city, state), address_confirmed_at, carrier, tracking_code, shipped_at, delivered_at;
+  - CHECK `SHIPPED`/`DELIVERED` exigem carrier e tracking_code;
+  - migração `0009_prize_deliveries.sql`, que também cria a entrega pendente para as Vibes já `ENDED` com vencedor.
 - Migração da rodada: `0008_market.sql` (nenhuma antiga editada).
 - _(D4)_ **getcoin_ledger.type** ganhou `COUPON` (migração `0003_settings_coupons.sql`, que também cria as tabelas acima).
 
@@ -284,6 +288,31 @@ Unidades: GetCoin sempre em **centavos de GetCoin** (100 = 1 GetCoin); preços e
     - admin: `GET /admin/market/listings`, `GET /admin/market/orders` e `POST /admin/market/listings/:id/cancel`, todos com audit.
   - `POST /payments/:id/simulate` e o webhook precisam funcionar também para pagamentos de pedido.
   - O painel admin mostra a receita de taxas (soma de `fee_cents` dos pedidos pagos).
+
+### 6.4 Entrega do prêmio (D13, implementado em 2026-09-29 — decisão do agente, confirmar com o cliente)
+
+- **Criação:** o encerramento (`settleVibe`) cria a entrega do vencedor na mesma transação, com status `AWAITING_ADDRESS`. É idempotente (UNIQUE por Vibe).
+- **Endereço:**
+  - o vencedor confirma o endereço de entrega (quem recebe, celular e endereço), e a entrega vai para `PREPARING`;
+  - pode trocá-lo enquanto estiver em `AWAITING_ADDRESS` ou `PREPARING`; depois do envio, `409 PRIZE_ALREADY_SHIPPED`;
+  - o endereço fica copiado na entrega: mudar o perfil depois não muda a entrega.
+- **Status pelo ADMIN:**
+  - `PREPARING → SHIPPED` exige transportadora e código de rastreio;
+  - enquanto `SHIPPED`, dá para corrigir o rastreio sem mudar `shipped_at`;
+  - `SHIPPED → DELIVERED`;
+  - qualquer outra transição → `409 PRIZE_INVALID_TRANSITION`;
+  - SUPPORT só lê;
+  - audit: `PRIZE_ADDRESS_CONFIRMED|CHANGED`, `PRIZE_SHIPPED`, `PRIZE_TRACKING_UPDATED`, `PRIZE_DELIVERED`.
+- **LGPD:**
+  - `DELETE /me` responde `409 PRIZE_OPEN` com prêmio ainda não entregue (o vencedor perderia o prêmio);
+  - na exclusão, o endereço e o telefone das entregas antigas são apagados, e o status e o rastreio ficam;
+  - `/me/export` inclui `prizes`.
+- **Front:**
+  - "Seus prêmios" no topo de Meus Gets: cartão com linha do tempo, formulário com busca de CEP preenchido pelo perfil, endereço resumido, rastreio com botão de copiar e data de entrega;
+  - aviso no Início quando `prizesAwaitingAddress > 0`;
+  - a tela do ADMIN para enviar e entregar fica para o painel `/admin`.
+- **Favoritas:** `GET /me/favorites/vibes` devolve as Vibes favoritadas no formato de `GET /vibes` (com `getsCloseAt`), ao vivo primeiro. O front mostra "Vibes favoritas" em Meus Gets com o `VibeCard` da vitrine.
+- **Histórico de compras de GetCoins:** "Suas compras de GetCoins" na aba GetCoins da Carteira, usando `GET /me/getcoin-purchases`, que já existia.
 
 ## 7. Contrato da API (`/api/v1`)
 
@@ -644,6 +673,11 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - "Seus saques" em painel próprio;
     - no celular vira uma coluna, com `minmax(0, 1fr)` para o input grande não estourar a largura.
   - **Scroll que "não ia até o fim":** era a emulação de viewport 1920×1080 que o agente tinha deixado ligada na aba do Chrome de testes (a janela real mostra 889 px). Não era defeito do site; a emulação foi desfeita.
+  - **D13 (entrega do prêmio, favoritas e histórico de compras):** detalhes na seção 6.4.
+    - Testes novos em `tests/d13-prizes.test.ts` (5); suíte **519/519**.
+    - **Teste do QA alterado:** em `tests/lgpd.test.ts › anonimiza dados pessoais…`, o usuário era o único a dar Get, vencia a Vibe e agora esbarraria no `PRIZE_OPEN`. Entrou um concorrente com Get maior para o teste continuar verificando a anonimização; nenhuma asserção mudou. **QA: revisar.**
+    - Também em Meus Gets: o "Explorar Vibes" apontava para o site antigo (`https://vibeget.net/leiloes`) e passou para `/vibes`.
+    - Testado no navegador: vitória na `vibe-teste-premio`, aviso no Início, confirmação com busca de CEP, envio pelo admin via API (Correios, QB123456789BR), rastreio na tela, favoritar pelo coração e compra do Pacote 50 no histórico, no desktop e no celular.
   - **API de dev reiniciada sem matar o processo:** foi enviado Ctrl+C (SIGINT) ao console dela por um processo auxiliar (`AttachConsole` + `GenerateConsoleCtrlEvent`), e o log registrou "encerrando SIGINT".
 
 ## 11. Próximos passos
@@ -675,7 +709,8 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 6. ~~Cliente precisa definir bônus~~ (D3: o ADMIN define em `/admin/settings`). Ainda pendente do cliente: preços reais dos 4 produtos estimados e se `goal_gets` encerra a Vibe.
 7. ~~Telas `/login` e `/cadastro`~~ (feito em 2026-09-25, ver seção 13). Próximo no front:
    - 7.1 ~~Dashboard completo~~ (feito; em 2026-09-29 entraram o resgate de cupom, a exportação, a exclusão de conta, sair de todos os dispositivos e os limites de saque).
-   - 7.2 Painel `/admin`: configurações (D3), cupons (D4), cadastro de leilão com upload (D5), usuários e audit log.
+   - 7.2 Painel `/admin`: configurações (D3), cupons (D4), cadastro de leilão com upload (D5), usuários e audit log, saques, pacotes, marketplace e **entregas de prêmio (D13: `GET /admin/prizes`, `PATCH /admin/prizes/:id`)**.
+   - 7.2.1 Cliente: confirmar a regra D13 (bloquear exclusão de conta com prêmio a receber; endereço editável até o envio) e se haverá prazo para o vencedor confirmar o endereço.
    - 7.3 Tela de Vibe (`/produto/:slug`) com o botão de Get, usando `getsCloseAt` e tratando `409 VIBE_CLOSING`.
    - 7.4 ~~Refresh entre abas~~ (feito em 2026-09-29 com Web Locks e BroadcastChannel).
    - 7.5 Rodar o documentador do Impeccable para alinhar o `DESIGN.md` aos tokens reais de `:root` em `src/styles.css`. O desvio já existia antes; o DESIGN.md também não registra as peças novas: folha de acesso, campo em pílula de vidro e tinta de erro em ember.

@@ -18,6 +18,7 @@ import getRoutes from './modules/gets/routes.js'
 import meRoutes from './modules/me/routes.js'
 import paymentRoutes from './modules/payments/routes.js'
 import vibeRoutes from './modules/vibes/routes.js'
+import prizeRoutes from './modules/prizes/routes.js'
 import authPlugin from './plugins/auth.js'
 import errorsPlugin from './plugins/errors.js'
 import securityPlugin from './plugins/security.js'
@@ -122,6 +123,7 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
       await api.register(withdrawalRoutes)
       await api.register(addressRoutes)
       await api.register(marketRoutes)
+      await api.register(prizeRoutes)
     },
     { prefix: API_PREFIX },
   )

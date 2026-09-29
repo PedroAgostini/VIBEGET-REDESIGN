@@ -155,6 +155,19 @@ export default function Home() {
       )}
       {dash.error && <LoadError message={dash.error} onRetry={dash.reload} />}
 
+      {d?.prizesAwaitingAddress > 0 && (
+        <section className="pz-banner glass" aria-labelledby="pz-banner-title">
+          <Trophy size={30} weight="fill" className="pz-banner-icon" aria-hidden="true" />
+          <div>
+            <h2 id="pz-banner-title" className="dh-section-title">
+              {d.prizesAwaitingAddress > 1 ? `Você tem ${d.prizesAwaitingAddress} prêmios esperando` : 'Você venceu uma Vibe!'}
+            </h2>
+            <p className="dh-text">Confirme o endereço de entrega para a gente enviar o seu prêmio.</p>
+          </div>
+          <Link to="/dashboard/gets#premios" className="btn btn-coin">Confirmar endereço<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
+        </section>
+      )}
+
       <div className="dh-grid">
         <section className="dh-wallet glass" aria-label="Carteira">
           <div className="dh-row">

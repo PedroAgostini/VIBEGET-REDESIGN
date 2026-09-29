@@ -64,6 +64,8 @@ export const purchaseStatus = pgEnum('purchase_status', ['PENDING_PAYMENT', 'PAI
 export const withdrawalStatus = pgEnum('withdrawal_status', ['PENDING', 'PAID', 'REJECTED'])
 export const pixKeyType = pgEnum('pix_key_type', ['CPF', 'EMAIL', 'PHONE', 'RANDOM'])
 export const paymentStatus = pgEnum('payment_status', ['PENDING', 'PAID', 'FAILED', 'REFUNDED'])
+// D13: entrega do prêmio ao vencedor da Vibe
+export const prizeStatus = pgEnum('prize_status', ['AWAITING_ADDRESS', 'PREPARING', 'SHIPPED', 'DELIVERED'])
 
 // ---------- helpers ----------
 const id = () =>
@@ -609,7 +611,51 @@ export const marketOrders = pgTable(
   ],
 )
 
+/**
+ * D13: entrega do prêmio. Uma por Vibe encerrada com vencedor (criada no settlement).
+ * O endereço é uma cópia do momento da confirmação: mudar o perfil depois não muda a entrega.
+ */
+export const prizeDeliveries = pgTable(
+  'prize_deliveries',
+  {
+    id: id(),
+    vibeId: uuid('vibe_id')
+      .notNull()
+      .references(() => vibes.id),
+    getId: uuid('get_id')
+      .notNull()
+      .references(() => gets.id),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id),
+    status: prizeStatus('status').notNull().default('AWAITING_ADDRESS'),
+    recipientName: varchar('recipient_name', { length: 120 }),
+    phone: varchar('phone', { length: 20 }),
+    cep: varchar('cep', { length: 8 }),
+    street: varchar('street', { length: 160 }),
+    number: varchar('number', { length: 20 }),
+    complement: varchar('complement', { length: 80 }),
+    district: varchar('district', { length: 100 }),
+    city: varchar('city', { length: 100 }),
+    state: varchar('state', { length: 2 }),
+    addressConfirmedAt: timestamp('address_confirmed_at', { withTimezone: true }),
+    carrier: varchar('carrier', { length: 60 }),
+    trackingCode: varchar('tracking_code', { length: 60 }),
+    shippedAt: timestamp('shipped_at', { withTimezone: true }),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex('prize_deliveries_vibe_uq').on(t.vibeId),
+    index('prize_deliveries_user_idx').on(t.userId, t.createdAt),
+    index('prize_deliveries_status_idx').on(t.status, t.createdAt),
+    check('prize_deliveries_shipped_ck', sql`${t.status} NOT IN ('SHIPPED', 'DELIVERED') OR (${t.carrier} IS NOT NULL AND ${t.trackingCode} IS NOT NULL)`),
+  ],
+)
+
 export type User = typeof users.$inferSelect
+export type PrizeDelivery = typeof prizeDeliveries.$inferSelect
 export type Vibe = typeof vibes.$inferSelect
 export type Product = typeof products.$inferSelect
 export type Get = typeof gets.$inferSelect

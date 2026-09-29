@@ -1,6 +1,7 @@
 import { and, count, desc, eq, inArray, isNull, ne, or, sum, sql } from 'drizzle-orm'
 import type { AppContext, RequestMeta } from '../../context.js'
-import { auditLogs, authTokens, getcoinLedger, gets, payments, products, sessions, users, vibes, cashLedger, getcoinPurchases, withdrawals, marketListings, marketOrders } from '../../db/schema.js'
+import { auditLogs, authTokens, getcoinLedger, gets, payments, products, sessions, users, vibes, cashLedger, getcoinPurchases, withdrawals, marketListings, marketOrders, prizeDeliveries } from '../../db/schema.js'
+import { countOpenPrizes, listMyPrizes } from '../prizes/service.js'
 import { audit } from '../../lib/audit.js'
 import { hashPassword, randomToken, referralCode, verifyPassword } from '../../lib/crypto.js'
 import { AppError, badRequest, conflict, isUniqueViolation, unauthorized } from '../../lib/errors.js'
@@ -78,6 +79,8 @@ export async function dashboard(ctx: AppContext, userId: string) {
     cashBalanceCents: await getCashBalance(db, userId),
     getsSummary: await getsSummary(db, userId),
     referralCode: user.referralCode,
+    // D13: prêmios esperando o vencedor confirmar o endereço (aviso no Início)
+    prizesAwaitingAddress: (await listMyPrizes(db, userId)).filter((p) => p.status === 'AWAITING_ADDRESS').length,
   }
 }
 
@@ -232,6 +235,7 @@ export async function exportMyData(ctx: AppContext, userId: string) {
       })
       .from(getcoinPurchases)
       .where(eq(getcoinPurchases.userId, userId)),
+    prizes: await listMyPrizes(db, userId),
     actionsByOthers: byOthers,
   }
 }
@@ -302,6 +306,10 @@ export async function deleteMe(ctx: AppContext, userId: string, password: string
       'Você tem Gets em Vibes em andamento. Aguarde o encerramento para excluir a conta.',
     )
   }
+  // D13: prêmio ainda não entregue seria perdido junto com o endereço.
+  if ((await countOpenPrizes(db, userId)) > 0) {
+    throw new AppError(409, 'PRIZE_OPEN', 'Você tem um prêmio a receber. Aguarde a entrega para excluir a conta.')
+  }
 
   const unusableHash = await hashPassword(randomToken(48))
   await db.transaction(async (tx) => {
@@ -338,6 +346,11 @@ export async function deleteMe(ctx: AppContext, userId: string, password: string
     for (const w of await tx.select().from(withdrawals).where(eq(withdrawals.userId, userId))) {
       await tx.update(withdrawals).set({ pixKey: maskPixKey(w.pixKeyType, w.pixKey) }).where(eq(withdrawals.id, w.id))
     }
+    // D13: endereço e telefone de entregas antigas são dado pessoal; a entrega em si (status, rastreio) fica.
+    await tx
+      .update(prizeDeliveries)
+      .set({ recipientName: null, phone: null, cep: null, street: null, number: null, complement: null, district: null, city: null, state: null })
+      .where(eq(prizeDeliveries.userId, userId))
     await audit(tx, { actorId: userId, action: 'ACCOUNT_DELETED', entity: 'user', entityId: userId })
     // Anonimiza o IP de todo o histórico de auditoria ligado ao titular (QA-15).
     await tx

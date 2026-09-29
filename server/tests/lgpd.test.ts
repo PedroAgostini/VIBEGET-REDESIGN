@@ -67,6 +67,9 @@ describe('DELETE /me', () => {
     await fund(t, u.id, 100)
     await send(t, 'POST', '/auth/forgot-password', { email: u.email })
     const gId = await confirmedGet(t, u.accessToken, vibe.id, { cashCents: 500 })
+    // D13: outro usuário vence; se `u` vencesse, o prêmio a receber também bloquearia a exclusão (PRIZE_OPEN).
+    const rival = await userWithToken(t)
+    await confirmedGet(t, rival.accessToken, vibe.id, { cashCents: 900 })
     // Get em Vibe LIVE bloqueia a exclusão
     const blocked = await send(t, 'DELETE', '/me', { password: u.password }, bearer(u.accessToken))
     expect(blocked.statusCode).toBe(409)

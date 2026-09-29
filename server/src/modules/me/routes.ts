@@ -5,7 +5,7 @@ import { authOf, metaOf } from '../../plugins/auth.js'
 import { REFRESH_COOKIE, REFRESH_COOKIE_PATH } from '../auth/routes.js'
 import { z } from 'zod'
 import { getMyGet, getsSummary, leadingVibes, listMyGets } from '../gets/service.js'
-import { listFavoriteIds, setFavorite } from '../vibes/service.js'
+import { listFavoriteIds, listFavoriteVibes, setFavorite } from '../vibes/service.js'
 
 const uuidParams = z.object({ id: z.uuid() }).strict()
 import { vibeDeadlines } from '../vibes/deadlines.js'
@@ -42,6 +42,11 @@ export default async function meRoutes(app: FastifyInstance) {
 
   // D10: favoritos
   app.get('/me/favorites', async (req) => ({ data: await listFavoriteIds(ctx.db, authOf(req).userId) }))
+  app.get('/me/favorites/vibes', async (req) => {
+    const cfg = await ctx.settings.get()
+    const rows = await listFavoriteVibes(ctx.db, authOf(req).userId)
+    return { data: rows.map((v) => ({ ...v, getsCloseAt: vibeDeadlines(v.endsAt, cfg).cutoffAt })) }
+  })
   app.put('/me/favorites/:id', async (req, reply) => {
     const { id } = parse(uuidParams, req.params)
     await setFavorite(ctx.db, authOf(req).userId, id, true)

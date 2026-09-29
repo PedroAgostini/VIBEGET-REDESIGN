@@ -205,6 +205,23 @@ export async function listFavoriteIds(db: DbOrTx, userId: string) {
   return rows.map((r) => r.vibeId)
 }
 
+/** Vibes favoritadas, no mesmo formato da vitrine; ao vivo primeiro, depois as mais recentes. */
+export async function listFavoriteVibes(db: DbOrTx, userId: string) {
+  const rows = await db
+    .select(vibeWithProduct)
+    .from(favorites)
+    .innerJoin(vibes, eq(vibes.id, favorites.vibeId))
+    .innerJoin(products, eq(products.id, vibes.productId))
+    .where(and(eq(favorites.userId, userId), inArray(vibes.status, [...PUBLIC_STATUSES])))
+    .orderBy(sql`${vibes.status} = 'LIVE' DESC`, asc(vibes.endsAt), desc(favorites.createdAt))
+    .limit(60)
+  const stats = await vibeStats(
+    db,
+    rows.map((r) => r.id),
+  )
+  return rows.map((r) => ({ ...r, ...stats.get(r.id)! }))
+}
+
 export async function setFavorite(db: DbOrTx, userId: string, vibeId: string, on: boolean) {
   if (!on) {
     await db.delete(favorites).where(and(eq(favorites.userId, userId), eq(favorites.vibeId, vibeId)))

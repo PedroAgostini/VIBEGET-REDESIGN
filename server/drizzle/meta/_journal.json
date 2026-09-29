@@ -64,6 +64,13 @@
       "when": 1790615070326,
       "tag": "0008_market",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790686534708,
+      "tag": "0009_prize_deliveries",
+      "breakpoints": true
     }
   ]
 }

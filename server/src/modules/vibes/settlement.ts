@@ -2,7 +2,7 @@ import { and, asc, desc, eq, gt, inArray, lte } from 'drizzle-orm'
 import { safeErrorForLog } from '../../lib/log-safety.js'
 import type { AppContext } from '../../context.js'
 import type { Tx } from '../../db/client.js'
-import { gets, payments, users, vibes, wallets } from '../../db/schema.js'
+import { gets, payments, prizeDeliveries, users, vibes, wallets } from '../../db/schema.js'
 import { audit } from '../../lib/audit.js'
 import { AppError, notFound } from '../../lib/errors.js'
 import { cashbackFor } from '../../lib/money.js'
@@ -139,6 +139,8 @@ export async function settleVibe(
 
     if (winner) {
       await tx.update(users).set({ level: 'VIBER' }).where(eq(users.id, winner.userId))
+      // D13: nasce a entrega do prêmio, aguardando o vencedor confirmar o endereço.
+      await tx.insert(prizeDeliveries).values({ vibeId, getId: winner.id, userId: winner.userId }).onConflictDoNothing()
     }
 
     const settledAt = new Date()

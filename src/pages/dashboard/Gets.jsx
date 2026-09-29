@@ -1,10 +1,36 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, ArrowUpRight, Gavel, Trophy } from '@phosphor-icons/react'
+import { Link } from 'react-router-dom'
+import { ArrowRight, ArrowUpRight, Gavel, Heart, Trophy } from '@phosphor-icons/react'
 import { brl, coins } from '../../lib/api.js'
 import { useApi } from '../../lib/useApi.js'
+import VibeCard from '../../components/VibeCard.jsx'
+import PrizesSection from './Prizes.jsx'
 import { LoadError, PageHead, Pager, Skeleton, dateFmt } from './ui.jsx'
 
-const SITE = 'https://vibeget.net'
+function FavoritesSection({ now }) {
+  const fav = useApi('/me/favorites/vibes')
+  const list = fav.data?.data ?? []
+  return (
+    <section className="dg-section" aria-labelledby="dg-fav-title">
+      <h2 id="dg-fav-title" className="dh-section-title">
+        <Heart size={20} weight="fill" className="dg-heart" aria-hidden="true" />
+        Vibes favoritas {list.length ? <span className="mono dg-count dg-count-soft">{list.length}</span> : null}
+      </h2>
+      {fav.error ? <LoadError message={fav.error} onRetry={fav.reload} />
+        : fav.loading && !fav.data ? <Skeleton lines={2} />
+          : list.length === 0 ? (
+            <div className="dg-inline-empty">
+              <p className="dg-inline-empty-title">Nenhuma favorita ainda</p>
+              <p>Toque no coração na página de uma Vibe para guardá-la aqui.</p>
+            </div>
+          ) : (
+            <div className={`vibe-grid vp-grid n-${Math.min(list.length, 4)}`}>
+              {list.map((v) => <VibeCard key={v.id} v={v} now={now} />)}
+            </div>
+          )}
+    </section>
+  )
+}
 
 const GET_STATUS = {
   CONFIRMED: ['Confirmado', 'ok'],
@@ -83,6 +109,8 @@ export default function Gets() {
           </dl>
         )}
 
+      <PrizesSection />
+
       {firstGet ? (
         <section className="dg-onboarding glass" aria-labelledby="dg-first-title">
           <Gavel size={34} weight="duotone" aria-hidden="true" />
@@ -90,7 +118,7 @@ export default function Gets() {
             <h2 id="dg-first-title" className="dh-section-title">Seu primeiro Get começa em uma Vibe aberta</h2>
             <p className="dh-text">Escolha um produto, defina o valor do seu Get e entre na disputa. Depois, todo o acompanhamento aparece aqui.</p>
           </div>
-          <a className="btn btn-coin" href={`${SITE}/leiloes`}>Explorar Vibes<ArrowRight size={18} weight="bold" aria-hidden="true" /></a>
+          <Link className="btn btn-coin" to="/vibes">Explorar Vibes<ArrowRight size={18} weight="bold" aria-hidden="true" /></Link>
         </section>
       ) : (
         <>
@@ -111,6 +139,8 @@ export default function Gets() {
                 )}
           </section>
 
+          <FavoritesSection now={now} />
+
           <section className="dg-history glass" aria-labelledby="dg-hist-title">
             <h2 id="dg-hist-title" className="dh-section-title">Histórico de Gets</h2>
             {history.error ? <LoadError message={history.error} onRetry={history.reload} />
@@ -122,7 +152,7 @@ export default function Gets() {
                       <p className="dw-empty-title">Nenhum Get por aqui ainda</p>
                       <p className="dw-empty-copy">Escolha uma Vibe aberta para entrar na disputa.</p>
                     </div>
-                    <a className="btn btn-glass" href={`${SITE}/leiloes`}>Explorar Vibes<ArrowUpRight size={17} aria-hidden="true" /></a>
+                    <Link className="btn btn-glass" to="/vibes">Explorar Vibes<ArrowUpRight size={17} aria-hidden="true" /></Link>
                   </div>
                 ) : (
                   <div className="dg-table-wrap">

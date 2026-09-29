@@ -28,8 +28,12 @@ export default async function withdrawalRoutes(app: FastifyInstance) {
   app.get('/me/cash', { preHandler: app.authenticate }, async (req) => {
     const p = parse(paginationSchema.strict(), req.query)
     const userId = authOf(req).userId
-    const [balanceCents, ledger] = await Promise.all([getCashBalance(ctx.db, userId), listCashLedger(ctx.db, userId, p)])
-    return { data: { balanceCents }, ledger }
+    const [balanceCents, ledger, withdraw] = await Promise.all([
+      getCashBalance(ctx.db, userId),
+      listCashLedger(ctx.db, userId, p),
+      svc.withdrawLimits(ctx, userId),
+    ])
+    return { data: { balanceCents, withdraw }, ledger }
   })
 
   app.post(

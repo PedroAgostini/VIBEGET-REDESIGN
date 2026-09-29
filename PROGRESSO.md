@@ -614,6 +614,37 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - pacotes "Pacote 50" e "Pacote 200";
     - GetCoins e R$ 150 creditados pelo admin com o motivo "Teste visual do marketplace";
     - 6 anúncios e 2 pedidos pagos.
+- **2026-09-29 (parte do usuário finalizada)**
+  - **Backend:** `GET /me/cash` passa a devolver `data.withdraw = { minCents, dailyMaxCents, usedLast24hCents, availableCents }`. É calculado com a mesma soma das últimas 24 h que `requestWithdrawal` aplica (função `withdrawnLast24h`). Teste novo em `d6-d9-sanity.test.ts`; suíte **514/514**.
+  - **Carteira:**
+    - resgate de cupom (`/me/coupons/redeem`) na aba GetCoins;
+    - o saque mostra o mínimo e o disponível nas 24 h, valida no cliente e tem o atalho "Sacar tudo".
+  - **Minha conta:**
+    - "Sair de todos os dispositivos" (`/auth/logout-all`);
+    - baixar meus dados (`/me/export`, arquivo JSON);
+    - excluir conta (`DELETE /me` com senha), com os bloqueios 409 (`MARKET_OPEN`, `CASH_BALANCE`, `OPEN_GETS`) mostrados com link para resolver. O botão destrutivo usa tinta ember (`.btn-danger`), não o vermelho do "ao vivo".
+  - **Sessão entre abas (`src/lib/api.js`):**
+    - a renovação é serializada entre abas com Web Locks (`vibeget-refresh`);
+    - login, logout, renovação e troca de perfil são avisados às outras abas por BroadcastChannel (`vibeget-session`); quem esperava a vez reaproveita o token em vez de renovar de novo;
+    - sem Web Locks, continua valendo o retry do `409 REFRESH_RACE`.
+  - **Testado no navegador:**
+    - cupom (crédito e mensagem genérica na repetição);
+    - saque (validação do mínimo, pedido real de R$ 20 e disponível caindo para R$ 4.980);
+    - exportação, exclusão (senha errada e bloqueio `MARKET_OPEN`) e logout entre abas;
+    - Get com Pix + turbo na página da Vibe, com Meus Gets marcando "Liderando";
+    - encerramento pelo admin numa Vibe de teste, com o vencedor virando VIBER e o perdedor recebendo 40% de cashback.
+  - **Dados de teste novos:**
+    - cupom `BEMVINDO10`;
+    - produto e Vibe `vibe-teste-encerramento` (encerrada);
+    - CPF na conta de teste (529.982.247-25) e na da Marina (111.444.777-35);
+    - um saque pendente de R$ 20.
+  - **Saque redesenhado:**
+    - formulário à esquerda (valor em destaque com atalhos, tipo de chave em botões, exemplo da chave por tipo);
+    - resumo à direita (disponível nas 24 h com barra, mínimo, saldo agora e depois, valor a receber e botão);
+    - "Seus saques" em painel próprio;
+    - no celular vira uma coluna, com `minmax(0, 1fr)` para o input grande não estourar a largura.
+  - **Scroll que "não ia até o fim":** era a emulação de viewport 1920×1080 que o agente tinha deixado ligada na aba do Chrome de testes (a janela real mostra 889 px). Não era defeito do site; a emulação foi desfeita.
+  - **API de dev reiniciada sem matar o processo:** foi enviado Ctrl+C (SIGINT) ao console dela por um processo auxiliar (`AttachConsole` + `GenerateConsoleCtrlEvent`), e o log registrou "encerrando SIGINT".
 
 ## 11. Próximos passos
 
@@ -631,7 +662,7 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 3.3.1. ~~**QA — D6–D9:** suíte completa~~ (feito em 2026-09-25: 18 testes novos; 17 verdes, 1 falha que abriu o QA-22; suíte total 430/431).
 3.3.1.1. ~~Builder: corrigir [QA-22]~~ (feito em 2026-09-29; suíte 513/513). **QA: reverificar QA-22, QA-23 e QA-24.**
 3.3.1.2. ~~Builder: corrigir [QA-23] e [QA-24]~~ (testes verdes em 2026-09-29).
-3.3.2. **Front:** usar `/admin/settings/withdrawals` para os limites de saque (desvio da seção 3); tratar `409 CASH_BALANCE` na exclusão de conta.
+3.3.2. ~~Front: limites de saque e `409 CASH_BALANCE` na exclusão~~ (feito em 2026-09-29; o usuário recebe os limites em `GET /me/cash` → `data.withdraw`).
 3.3.3. **Produção — saque:** o ADMIN paga o Pix fora do sistema e depois aprova. Com gateway real, integrar o pagamento do saque (payout) e conciliação; definir se o limite diário deve ser por dia civil (America/Sao_Paulo) em vez de janela de 24 h.
 3.3.4. **Cliente:** confirmar a interpretação "Vencidas = vitórias" (D9) e os valores iniciais de saque (R$ 10,00 mínimo; R$ 5.000,00 por dia).
 3.4.1. ~~Aplicar a 0008 no banco de dev~~ (feito em 2026-09-29).
@@ -643,10 +674,10 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 5. Trocar `ConsoleMailer` por provedor real e o provedor de pagamento MOCK por gateway (mesma interface de `mockProvider` e webhook).
 6. ~~Cliente precisa definir bônus~~ (D3: o ADMIN define em `/admin/settings`). Ainda pendente do cliente: preços reais dos 4 produtos estimados e se `goal_gets` encerra a Vibe.
 7. ~~Telas `/login` e `/cadastro`~~ (feito em 2026-09-25, ver seção 13). Próximo no front:
-   - 7.1 Dashboard completo: ~~home, perfil/endereço, troca de senha, Meus Gets, carteiras/saque e compra de GetCoins~~ (implementados; layout responsivo, onboarding de Meus Gets, estados vazios da carteira/compra e ícone de GetCoin revistos em 2026-09-25). Ainda faltam resgate de cupom (`/me/coupons/redeem`), exportação e exclusão (LGPD).
+   - 7.1 ~~Dashboard completo~~ (feito; em 2026-09-29 entraram o resgate de cupom, a exportação, a exclusão de conta, sair de todos os dispositivos e os limites de saque).
    - 7.2 Painel `/admin`: configurações (D3), cupons (D4), cadastro de leilão com upload (D5), usuários e audit log.
    - 7.3 Tela de Vibe (`/produto/:slug`) com o botão de Get, usando `getsCloseAt` e tratando `409 VIBE_CLOSING`.
-   - 7.4 Refresh entre abas: hoje o single-flight vale só dentro de uma aba (`src/lib/api.js`); falta sincronizar entre abas com BroadcastChannel (item 3.3).
+   - 7.4 ~~Refresh entre abas~~ (feito em 2026-09-29 com Web Locks e BroadcastChannel).
    - 7.5 Rodar o documentador do Impeccable para alinhar o `DESIGN.md` aos tokens reais de `:root` em `src/styles.css`. O desvio já existia antes; o DESIGN.md também não registra as peças novas: folha de acesso, campo em pílula de vidro e tinta de erro em ember.
    - 7.6 Deploy do front: rotas SPA precisam de fallback para `index.html`; as telas novas usam caminhos absolutos (`/img/...`), então o site precisa ficar na raiz do domínio.
 

@@ -1238,6 +1238,20 @@ button.auth-tab { border: 0; background: none; padding: 0 18px; font: inherit; f
 .af-input[readonly] { color: var(--ink-2); background: transparent; border-style: dashed; }
 .af-select { appearance: none; -webkit-appearance: none; padding-right: 44px; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23e6d3c3' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 20px center; }
 .af-select option { background: #1a100b; color: var(--ink); }
+.dc-row-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.dc-privacy-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-top: 16px; border-top: 1px solid var(--line); }
+.dc-privacy-title { font-weight: 600; color: var(--ink); }
+.dc-privacy-copy { margin-top: 2px; max-width: 60ch; font-size: 0.86rem; color: var(--muted); }
+/* Ação destrutiva: tinta ember (a mesma do erro), nunca o vermelho do "ao vivo" */
+.btn-danger { color: #ff9a6b; border-color: rgba(223, 101, 50, 0.45); }
+.btn-danger:hover { background: rgba(223, 101, 50, 0.14); border-color: rgba(223, 101, 50, 0.7); }
+.af-form.dc-delete { gap: 16px; padding: 18px; border-radius: var(--r-sm); border: 1px solid rgba(223, 101, 50, 0.35); background: rgba(223, 101, 50, 0.05); }
+.dc-delete-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.88rem; color: var(--ink-2); }
+.dc-delete-pass { max-width: 380px; }
+@media (max-width: 600px) {
+  .dc-row-actions { flex-direction: column-reverse; }
+  .dc-row-actions .btn, .dc-privacy-row .btn { width: 100%; }
+}
 
 /* Meus Gets */
 .dg-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border-radius: var(--r-lg); overflow: hidden; }
@@ -1300,11 +1314,38 @@ button.auth-tab { border: 0; background: none; padding: 0 18px; font: inherit; f
 .dw-empty > svg { color: var(--coin); }
 .dw-empty-title { color: var(--ink-2); font-weight: 600; }
 .dw-empty-copy { margin-top: 2px; max-width: 64ch; font-size: 0.86rem; line-height: 1.5; }
-.dw-grid { grid-template-columns: 1fr 1fr 1.4fr; }
-.dw-withdrawals { list-style: none; margin: 4px 0 0; padding: 0; }
-.dw-withdrawals li { display: grid; grid-template-columns: auto 1fr auto auto; gap: 6px 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+/* Saque: formulário à esquerda, resumo com limites e botão à direita */
+.af-form.dw-wd { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.9fr); gap: 20px 28px; align-items: start; }
+.dw-wd-main { display: grid; gap: 20px; min-width: 0; }
+.dw-wd .vd-money { height: 60px; }
+.dw-wd .vd-money input { width: 100%; min-width: 0; font-size: 1.5rem; }
+.dw-keytypes { margin: 0; padding: 0; border: 0; min-width: 0; display: grid; gap: 10px; }
+.dw-legend { padding: 0; font-weight: 600; font-size: 0.92rem; color: var(--ink-2); }
+.dw-keytype-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.dw-keytype { position: relative; display: grid; place-items: center; height: 44px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(14, 9, 6, 0.45); color: var(--ink-2); font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: border-color 0.3s var(--ease), background 0.3s var(--ease), color 0.3s var(--ease); }
+.dw-keytype input { position: absolute; opacity: 0; pointer-events: none; }
+.dw-keytype:hover { color: var(--ink); border-color: rgba(234, 173, 83, 0.4); }
+.dw-keytype.is-on { color: var(--ink); border-color: var(--coin); background: rgba(234, 173, 83, 0.1); }
+.dw-keytype:focus-within { outline: 2px solid var(--coin); outline-offset: 3px; }
+.dw-wd-side { display: grid; gap: 16px; padding: 20px; border-radius: var(--r); border: 1px solid var(--line); background: rgba(14, 9, 6, 0.4); }
+.dw-wd-side .af-submit { margin-top: 0; }
+.dw-wd-limit { display: grid; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.dw-wd-limit-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; font-size: 0.86rem; color: var(--muted); }
+.dw-wd-limit-head b { font-size: 1.15rem; font-weight: 400; color: var(--ink); }
+.dw-meter { display: block; height: 4px; border-radius: 999px; background: rgba(255, 226, 200, 0.1); overflow: hidden; }
+.dw-meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--ember), var(--coin)); transition: width 0.6s var(--ease); }
+.dw-wd-caption { font-size: 0.8rem; line-height: 1.5; color: var(--muted); }
+.dw-wd-side .vd-ledger-total dd { font-size: 1.4rem; }
+
+.dw-withdrawals { list-style: none; margin: 0; padding: 0; }
+.dw-withdrawals li { display: grid; grid-template-columns: minmax(110px, auto) 1fr auto auto; gap: 6px 18px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+.dw-withdrawals li:first-child { border-top: 0; }
+.dw-w-amount { font-size: 1.02rem; color: var(--ink); }
+.dw-withdrawals .dg-pill { justify-self: start; }
 .dw-w-key { min-width: 0; color: var(--muted); font-size: 0.86rem; overflow-wrap: anywhere; }
 .dw-w-reason { grid-column: 1 / -1; font-size: 0.82rem; color: var(--muted); }
+.dw-coupon { display: flex; gap: 10px; max-width: 520px; }
+.dw-coupon-input { flex: 1; min-width: 0; letter-spacing: 0.08em; }
 
 /* Comprar GetCoins */
 .db-lede { max-width: 60ch; }
@@ -1356,8 +1397,7 @@ button.auth-tab { border: 0; background: none; padding: 0 18px; font: inherit; f
   .dh-level-gate { grid-template-columns: 1fr auto 1fr; width: min(320px, 84%); min-height: 72px; justify-self: center; }
   .dh-level-gate-line { background: linear-gradient(90deg, transparent, rgba(234, 173, 83, 0.72), transparent); }
   .dh-level-gate > svg { rotate: 90deg; }
-  .dw-grid { grid-template-columns: 1fr 1fr; }
-  .dw-grid > :last-child { grid-column: 1 / -1; }
+  .af-form.dw-wd { grid-template-columns: minmax(0, 1fr); }
   .db-method-row { grid-template-columns: 1fr; }
   .db-empty { grid-template-columns: auto 1fr; }
   .db-empty-actions { grid-column: 2; justify-content: flex-start; }
@@ -1407,8 +1447,9 @@ button.auth-tab { border: 0; background: none; padding: 0 18px; font: inherit; f
   .dg-table th:nth-child(2), .dg-table td:nth-child(2), .dg-table th:nth-child(4), .dg-table td:nth-child(4) { display: none; }
   .dg-mobile-date { display: block; }
   .dw-mobile-date { display: block; }
-  .dw-grid { grid-template-columns: 1fr; }
   .dw-withdrawals li { grid-template-columns: 1fr auto; }
+  .dw-w-key { grid-column: 1; }
+  .dw-keytype-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dg-leads { grid-template-columns: 1fr; }
   .dg-lead { grid-template-columns: 88px 1fr; }
   .dg-stats { grid-template-columns: 1fr; }

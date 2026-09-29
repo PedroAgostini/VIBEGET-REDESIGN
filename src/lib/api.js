@@ -3,8 +3,19 @@
 const BASE = '/api/v1'
 
 let accessToken = null
+let currentUser = null
 let refreshing = null
 const listeners = new Set()
+
+// Abas do mesmo navegador dividem o cookie de refresh: uma renova por vez (Web Locks)
+// e avisa as outras pelo canal, que reaproveitam o token em vez de renovar de novo.
+const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('vibeget-session') : null
+let sharedAt = 0
+channel?.addEventListener('message', ({ data }) => {
+  sharedAt = Date.now()
+  setSession(data?.token ?? null, data?.user ?? null)
+})
+const withRefreshLock = (fn) => (navigator.locks ? navigator.locks.request('vibeget-refresh', fn) : fn())
 
 export class ApiError extends Error {
   constructor(status, code, message, details) {
@@ -20,9 +31,11 @@ export function onSessionChange(fn) {
   return () => listeners.delete(fn)
 }
 
-function setSession(token, user) {
+function setSession(token, user, { share = false } = {}) {
   accessToken = token
+  currentUser = user
   listeners.forEach((fn) => fn(user))
+  if (share) channel?.postMessage({ token, user })
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -51,26 +64,28 @@ async function raw(path, { method = 'GET', body, auth = false, headers: extra } 
   return data
 }
 
-// Uma renovação por vez; se outra aba renovou no mesmo instante (409 REFRESH_RACE),
-// o cookie novo já chegou e basta repetir uma vez.
+// Uma renovação por vez entre todas as abas. Se outra aba renovou enquanto esta esperava a vez,
+// usa o token que ela compartilhou. 409 REFRESH_RACE (navegador sem Web Locks): o cookie novo já chegou, repete uma vez.
 export function refreshSession() {
   if (!refreshing) {
-    refreshing = (async () => {
-      try {
-        const data = await raw('/auth/refresh', { method: 'POST' }).catch(async (err) => {
-          if (err.code !== 'REFRESH_RACE') throw err
-          await sleep(250)
-          return raw('/auth/refresh', { method: 'POST' })
-        })
-        setSession(data.accessToken, data.user)
-        return data.user
-      } catch (err) {
+    const askedAt = Date.now()
+    refreshing = withRefreshLock(async () => {
+      if (sharedAt >= askedAt && accessToken) return currentUser
+      const data = await raw('/auth/refresh', { method: 'POST' }).catch(async (err) => {
+        if (err.code !== 'REFRESH_RACE') throw err
+        await sleep(250)
+        return raw('/auth/refresh', { method: 'POST' })
+      })
+      setSession(data.accessToken, data.user, { share: true })
+      return data.user
+    })
+      .catch((err) => {
         setSession(null, null)
         throw err
-      } finally {
+      })
+      .finally(() => {
         refreshing = null
-      }
-    })()
+      })
   }
   return refreshing
 }
@@ -88,13 +103,13 @@ export async function api(path, options = {}) {
 
 export async function login(input) {
   const data = await raw('/auth/login', { method: 'POST', body: input })
-  setSession(data.accessToken, data.user)
+  setSession(data.accessToken, data.user, { share: true })
   return data
 }
 
 export async function register(input) {
   const data = await raw('/auth/register', { method: 'POST', body: input })
-  setSession(data.accessToken, data.user)
+  setSession(data.accessToken, data.user, { share: true })
   return data
 }
 
@@ -102,8 +117,20 @@ export async function logout() {
   try {
     await raw('/auth/logout', { method: 'POST' })
   } finally {
-    setSession(null, null)
+    setSession(null, null, { share: true })
   }
+}
+
+/** Encerra todas as sessões da conta, em qualquer aparelho. */
+export async function logoutAll() {
+  await api('/auth/logout-all', { method: 'POST' })
+  setSession(null, null, { share: true })
+}
+
+/** LGPD: exclui (anonimiza) a conta. A API recusa com 409 se houver saldo, anúncio ou Get em aberto. */
+export async function deleteAccount(password) {
+  await api('/me', { method: 'DELETE', body: { password } })
+  setSession(null, null, { share: true })
 }
 
 export const publicPost = (path, body) => raw(path, { method: 'POST', body })
@@ -119,7 +146,7 @@ export function fieldErrors(err) {
 
 /** Atualiza o usuário em memória (ex.: depois de editar o perfil) sem mexer no token. */
 export function updateUser(user) {
-  listeners.forEach((fn) => fn(user))
+  setSession(accessToken, user, { share: true })
 }
 
 export const coins = (cents) =>

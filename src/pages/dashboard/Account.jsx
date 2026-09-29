@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { CircleNotch, MapPin } from '@phosphor-icons/react'
-import { api, fieldErrors, updateUser } from '../../lib/api.js'
+import { Link, useNavigate } from 'react-router-dom'
+import { CircleNotch, DownloadSimple, MapPin, SignOut, Trash, WarningCircle } from '@phosphor-icons/react'
+import { api, deleteAccount, fieldErrors, logoutAll, updateUser } from '../../lib/api.js'
 import { useAuth } from '../../lib/auth.jsx'
 import { Field, FormAlert, PasswordField, Submit } from '../../components/form.jsx'
 import { PageHead } from './ui.jsx'
@@ -237,6 +238,165 @@ function PasswordForm({ email }) {
   )
 }
 
+/* ---------------- Sessões ---------------- */
+
+function SessionsSection() {
+  const navigate = useNavigate()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function signOutEverywhere() {
+    setBusy(true)
+    setError(null)
+    try {
+      await logoutAll()
+      navigate('/login', { replace: true })
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="dc-section glass" aria-labelledby="dc-sessions">
+      <div className="dc-section-head">
+        <h2 id="dc-sessions" className="dh-section-title">Sessões</h2>
+        <p className="dh-text">Esqueceu a conta aberta em outro aparelho? Saia de todos de uma vez. Você vai precisar entrar de novo aqui também.</p>
+      </div>
+      <FormAlert>{error}</FormAlert>
+      <div className="dc-row-actions">
+        <button type="button" className="btn btn-glass" onClick={signOutEverywhere} disabled={busy}>
+          {busy ? <CircleNotch size={18} className="af-spin" aria-hidden="true" /> : <SignOut size={18} aria-hidden="true" />}
+          {busy ? 'Saindo…' : 'Sair de todos os dispositivos'}
+        </button>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------- Privacidade (LGPD) ---------------- */
+
+const BLOCKERS = {
+  CASH_BALANCE: ['/dashboard/carteira?aba=saldo', 'Ir para o saldo em carteira'],
+  MARKET_OPEN: ['/dashboard/marketplace?aba=vender', 'Ver meus anúncios'],
+  OPEN_GETS: ['/dashboard/gets', 'Ver meus Gets'],
+}
+
+function PrivacySection({ email }) {
+  const navigate = useNavigate()
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState(null)
+  const [confirming, setConfirming] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passError, setPassError] = useState(null)
+  const [blocker, setBlocker] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+
+  async function download() {
+    setExporting(true)
+    setExportError(null)
+    try {
+      const data = await api('/me/export')
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'vibeget-meus-dados.json'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setExportError(err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  async function remove(e) {
+    e.preventDefault()
+    setPassError(null)
+    setBlocker(null)
+    if (!password) return setPassError('Informe sua senha para confirmar.')
+    setDeleting(true)
+    try {
+      await deleteAccount(password)
+      navigate('/', { replace: true })
+    } catch (err) {
+      if (err.code === 'INVALID_PASSWORD') setPassError(err.message)
+      else setBlocker({ message: err.message, link: BLOCKERS[err.code] })
+      setDeleting(false)
+    }
+  }
+
+  function cancel() {
+    setConfirming(false)
+    setPassword('')
+    setPassError(null)
+    setBlocker(null)
+  }
+
+  return (
+    <section className="dc-section glass" aria-labelledby="dc-privacy">
+      <div className="dc-section-head">
+        <h2 id="dc-privacy" className="dh-section-title">Privacidade e dados</h2>
+        <p className="dh-text">Pela LGPD, você pode baixar uma cópia de tudo o que guardamos sobre você ou excluir a sua conta.</p>
+      </div>
+
+      <div className="dc-privacy-row">
+        <div>
+          <p className="dc-privacy-title">Baixar meus dados</p>
+          <p className="dc-privacy-copy">Um arquivo JSON com perfil, endereço, Gets, extratos, saques, compras e marketplace.</p>
+        </div>
+        <button type="button" className="btn btn-glass" onClick={download} disabled={exporting}>
+          {exporting ? <CircleNotch size={18} className="af-spin" aria-hidden="true" /> : <DownloadSimple size={18} aria-hidden="true" />}
+          {exporting ? 'Preparando…' : 'Baixar arquivo'}
+        </button>
+      </div>
+      <FormAlert>{exportError}</FormAlert>
+
+      <div className="dc-privacy-row">
+        <div>
+          <p className="dc-privacy-title">Excluir minha conta</p>
+          <p className="dc-privacy-copy">Apaga seus dados pessoais e encerra o acesso. Não dá para desfazer.</p>
+        </div>
+        {!confirming && (
+          <button type="button" className="btn btn-glass btn-danger" onClick={() => setConfirming(true)}>
+            <Trash size={18} aria-hidden="true" />Excluir conta
+          </button>
+        )}
+      </div>
+
+      {confirming && (
+        <form className="af-form dc-form dc-delete" onSubmit={remove} noValidate aria-label="Confirmar exclusão da conta">
+          <ul className="dc-delete-list">
+            <li>Nome, e-mail, CPF, celular e endereço são apagados, e você não consegue mais entrar.</li>
+            <li>Seus GetCoins são perdidos. Saldo em R$ precisa ser sacado antes.</li>
+            <li>Pagamentos e saques continuam registrados, sem os seus dados, por obrigação legal.</li>
+          </ul>
+          {blocker && (
+            <div className="af-alert af-alert-error" role="alert">
+              <WarningCircle size={20} weight="fill" aria-hidden="true" />
+              <div>
+                {blocker.message}
+                {blocker.link && <> <Link to={blocker.link[0]} className="af-inline-link">{blocker.link[1]}</Link></>}
+              </div>
+            </div>
+          )}
+          <input className="af-hidden" type="email" autoComplete="username" value={email} readOnly tabIndex={-1} aria-hidden="true" />
+          <div className="dc-delete-pass">
+            <PasswordField label="Sua senha" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={passError} />
+          </div>
+          <div className="dc-row-actions">
+            <button type="button" className="btn btn-glass" onClick={cancel} disabled={deleting}>Cancelar</button>
+            <button type="submit" className="btn btn-glass btn-danger" disabled={deleting} aria-busy={deleting}>
+              {deleting ? <CircleNotch size={18} className="af-spin" aria-hidden="true" /> : <Trash size={18} aria-hidden="true" />}
+              {deleting ? 'Excluindo…' : 'Excluir definitivamente'}
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
+  )
+}
+
 export default function Account() {
   const { user } = useAuth()
   if (!user) return null
@@ -258,6 +418,8 @@ export default function Account() {
         <h2 id="dc-pass" className="dh-section-title">Alterar senha</h2>
         <PasswordForm email={user.email} />
       </section>
+      <SessionsSection />
+      <PrivacySection email={user.email} />
     </div>
   )
 }

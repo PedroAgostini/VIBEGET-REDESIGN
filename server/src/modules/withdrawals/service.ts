@@ -48,6 +48,33 @@ export function toWithdrawalView(w: Withdrawal) {
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
+/** Soma dos saques PENDING+PAID nas últimas 24 h (janela móvel). */
+async function withdrawnLast24h(db: DbOrTx, userId: string) {
+  const [{ s } = { s: '0' }] = await db
+    .select({ s: sql<string>`coalesce(sum(${withdrawals.amountCents}), 0)` })
+    .from(withdrawals)
+    .where(
+      and(
+        eq(withdrawals.userId, userId),
+        inArray(withdrawals.status, ['PENDING', 'PAID']),
+        gte(withdrawals.createdAt, new Date(Date.now() - DAY_MS)),
+      ),
+    )
+  return Number(s)
+}
+
+/** Limites de saque para a tela do usuário (os mesmos que requestWithdrawal aplica). */
+export async function withdrawLimits(ctx: AppContext, userId: string) {
+  const cfg = await ctx.settings.get()
+  const usedCents = await withdrawnLast24h(ctx.db, userId)
+  return {
+    minCents: cfg.withdrawMinCents,
+    dailyMaxCents: cfg.withdrawDailyMaxCents,
+    usedLast24hCents: usedCents,
+    availableCents: Math.max(0, cfg.withdrawDailyMaxCents - usedCents),
+  }
+}
+
 /**
  * D6 — pedido de saque. Idempotente por (usuário, Idempotency-Key).
  * Exige e-mail verificado e CPF. Valor >= withdrawMinCents; soma das últimas 24 h (PENDING+PAID) <= withdrawDailyMaxCents.
@@ -101,17 +128,7 @@ export async function requestWithdrawal(
     const w = await db.transaction(async (tx) => {
       await tx.insert(cashWallets).values({ userId, balanceCents: 0 }).onConflictDoNothing()
       await tx.select({ u: cashWallets.userId }).from(cashWallets).where(eq(cashWallets.userId, userId)).for('update')
-      const [{ s } = { s: '0' }] = await tx
-        .select({ s: sql<string>`coalesce(sum(${withdrawals.amountCents}), 0)` })
-        .from(withdrawals)
-        .where(
-          and(
-            eq(withdrawals.userId, userId),
-            inArray(withdrawals.status, ['PENDING', 'PAID']),
-            gte(withdrawals.createdAt, new Date(Date.now() - DAY_MS)),
-          ),
-        )
-      if (Number(s) + input.amountCents > cfg.withdrawDailyMaxCents) {
+      if ((await withdrawnLast24h(tx, userId)) + input.amountCents > cfg.withdrawDailyMaxCents) {
         throw new AppError(422, 'WITHDRAW_DAILY_LIMIT', 'Limite diário de saque atingido.')
       }
       const [created] = await tx

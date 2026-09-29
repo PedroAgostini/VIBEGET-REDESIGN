@@ -147,6 +147,20 @@ describe('D6 — saldo, Get com saldo e saque', () => {
     expect(r.json().data).toEqual({ withdrawMinCents: 1000, withdrawDailyMaxCents: 500000 })
     expect((await api('PATCH', '/admin/settings/withdrawals', admin.accessToken, { withdrawMinCents: 999999999 })).statusCode).toBe(400)
   })
+
+  it('/me/cash mostra ao usuário o mínimo e quanto ainda pode sacar nas últimas 24 h', async () => {
+    const u = await userWithToken(t)
+    await fundCash(u.id, 5000)
+    const before = (await api('GET', '/me/cash', u.accessToken)).json().data.withdraw
+    expect(before).toEqual({ minCents: 1000, dailyMaxCents: 500000, usedLast24hCents: 0, availableCents: 500000 })
+    const w = await api('POST', '/me/withdrawals', u.accessToken, { amountCents: 1500, pixKeyType: 'EMAIL', pixKey: 'lim@exemplo.com' }, { 'idempotency-key': 'wd-lim-0001' })
+    expect(w.statusCode).toBe(201)
+    const after = (await api('GET', '/me/cash', u.accessToken)).json().data.withdraw
+    expect(after).toMatchObject({ usedLast24hCents: 1500, availableCents: 498500 })
+    const rj = await api('POST', `/admin/withdrawals/${w.json().data.id}/reject`, admin.accessToken, { reason: 'Teste de limite' })
+    expect(rj.statusCode).toBe(200)
+    expect((await api('GET', '/me/cash', u.accessToken)).json().data.withdraw.usedLast24hCents).toBe(0)
+  })
 })
 
 describe('D8 — endereço e CEP', () => {

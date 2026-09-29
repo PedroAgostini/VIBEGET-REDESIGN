@@ -101,6 +101,38 @@ export async function api(path, options = {}) {
   }
 }
 
+/** Envia um arquivo (multipart) com a mesma autenticação e renovação de sessão de api(). */
+export async function upload(path, file) {
+  const send = async () => {
+    const form = new FormData()
+    form.append('file', file)
+    let res
+    try {
+      res = await fetch(BASE + path, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'fetch', ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
+        credentials: 'include',
+        body: form,
+      })
+    } catch {
+      throw new ApiError(0, 'NETWORK', 'Sem conexão com o servidor. Confira sua internet e tente de novo.')
+    }
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      const e = data?.error
+      throw new ApiError(res.status, e?.code ?? 'UNKNOWN', e?.message ?? 'Não foi possível enviar o arquivo.', e?.details)
+    }
+    return data
+  }
+  try {
+    return await send()
+  } catch (err) {
+    if (err.status !== 401) throw err
+    await refreshSession()
+    return send()
+  }
+}
+
 export async function login(input) {
   const data = await raw('/auth/login', { method: 'POST', body: input })
   setSession(data.accessToken, data.user, { share: true })

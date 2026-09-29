@@ -23,6 +23,7 @@ import Overview from './pages/admin/Overview.jsx'
 import Withdrawals from './pages/admin/Withdrawals.jsx'
 import Deliveries from './pages/admin/Deliveries.jsx'
 import AdminVibes from './pages/admin/AdminVibes.jsx'
+import NewAuction from './pages/admin/NewAuction.jsx'
 import { AuthProvider, RequireAuth, RequireStaff } from './lib/auth.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -51,6 +52,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="saques" element={<Withdrawals />} />
             <Route path="entregas" element={<Deliveries />} />
             <Route path="vibes" element={<AdminVibes />} />
+            <Route path="vibes/nova" element={<NewAuction />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

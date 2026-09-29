@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { ArrowSquareOut, Gavel } from '@phosphor-icons/react'
+import { Link, useOutletContext } from 'react-router-dom'
+import { ArrowSquareOut, Gavel, Plus } from '@phosphor-icons/react'
 import { api, brl } from '../../lib/api.js'
 import { useApi } from '../../lib/useApi.js'
 import { countdown } from '../../App.jsx'
@@ -41,6 +41,15 @@ function VibeRow({ v, now, isAdmin, onChanged }) {
     await api(`/admin/vibes/${v.id}`, { method: 'PATCH', body: { status: 'CANCELLED' } })
     onChanged()
   }
+  const openNow = async () => {
+    await api(`/admin/vibes/${v.id}`, { method: 'PATCH', body: { status: 'LIVE', startsAt: new Date().toISOString() } })
+    onChanged()
+  }
+  const schedule = async () => {
+    await api(`/admin/vibes/${v.id}`, { method: 'PATCH', body: { status: 'SCHEDULED' } })
+    onChanged()
+  }
+  const startsLater = new Date(v.startsAt).getTime() > now
 
   return (
     <li className="ad-item glass">
@@ -66,6 +75,20 @@ function VibeRow({ v, now, isAdmin, onChanged }) {
             label="Cancelar" tone="danger" confirmLabel="Cancelar a Vibe"
             warning="Todos os Gets são estornados: o dinheiro volta (Pix e cartão pelo provedor, saldo na hora) e o GetCoin usado volta para a carteira. Não há cashback nem vencedor."
             onConfirm={cancel}
+          />
+        )}
+        {isAdmin && v.status === 'DRAFT' && startsLater && (
+          <ConfirmAction
+            label="Agendar" confirmLabel="Agendar a Vibe"
+            warning={`Aparece no site como "em breve" e abre sozinha em ${dateFmt.format(new Date(v.startsAt))}.`}
+            onConfirm={schedule}
+          />
+        )}
+        {isAdmin && (v.status === 'DRAFT' || v.status === 'SCHEDULED') && (
+          <ConfirmAction
+            label={v.status === 'DRAFT' ? 'Publicar agora' : 'Abrir agora'} tone="coin" confirmLabel="Abrir para Gets agora"
+            warning={`A Vibe abre agora e termina em ${dateFmt.format(new Date(v.endsAt))}. O prazo total não pode passar de 15 dias.`}
+            onConfirm={openNow}
           />
         )}
         {isAdmin && v.status === 'LIVE' && (
@@ -94,7 +117,9 @@ export default function AdminVibes() {
 
   return (
     <div className="dp">
-      <PageHead title="Vibes" />
+      <PageHead title="Vibes">
+        {isAdmin && <Link to="/admin/vibes/nova" className="btn btn-coin"><Plus size={18} weight="bold" aria-hidden="true" />Novo leilão</Link>}
+      </PageHead>
       <p className="dh-text ad-lede">O encerramento acontece sozinho no fim do prazo. Aqui você acompanha as disputas e, se precisar, encerra antes ou cancela.</p>
       {!isAdmin && <ReadOnlyNote />}
       <FilterChips label="Filtrar Vibes" options={FILTERS} value={status} onChange={(s) => { setStatus(s); setPage(1) }} counts={byStatus} />

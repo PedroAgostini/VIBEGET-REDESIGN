@@ -30,11 +30,15 @@ import {
   X,
 } from '@phosphor-icons/react'
 import { brl, categories, num, tickerExtra, vibes } from './data.js'
+import Coin from './components/Coin.jsx'
+import UserChip from './components/UserChip.jsx'
+import { useAuth } from './lib/auth.jsx'
+import { Link } from 'react-router-dom'
 
 const SITE = 'https://vibeget.net'
 const spring = { type: 'spring', stiffness: 100, damping: 20 }
 
-function useNow(interval = 1000) {
+export function useNow(interval = 1000) {
   const [now, setNow] = useState(Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), interval)
@@ -79,24 +83,13 @@ function useActiveSection(ids) {
   return active
 }
 
-function countdown(ms) {
+export function countdown(ms) {
   const s = Math.max(0, Math.floor(ms / 1000))
   const d = Math.floor(s / 86400)
   const hh = String(Math.floor((s % 86400) / 3600)).padStart(2, '0')
   const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0')
   const ss = String(s % 60).padStart(2, '0')
   return d > 0 ? `${d}d ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`
-}
-
-function Coin({ size = 40, className = '' }) {
-  return (
-    <svg className={`coin ${className}`} width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="31" fill="#b9551a" />
-      <circle cx="32" cy="32" r="28" fill="#eaad53" />
-      <circle cx="32" cy="32" r="21.5" fill="none" stroke="#6e2d0b" strokeWidth="1.6" />
-      <path d="M36 15.5 23.5 35.5h8.6L29 49.5l12.8-21h-8.8z" fill="none" stroke="#4f1f06" strokeWidth="2.2" strokeLinejoin="round" />
-    </svg>
-  )
 }
 
 /* Pulls gently toward the cursor; motion values keep it outside React renders. */
@@ -139,19 +132,23 @@ const NAV = [
 ]
 const NAV_IDS = NAV.map(([, id]) => id)
 
-function Nav() {
+export function Nav({ current } = {}) {
   const [open, setOpen] = useState(false)
-  const active = useActiveSection(NAV_IDS)
+  const section = useActiveSection(NAV_IDS)
+  // Fora da home, a página informa qual item do menu está ativo.
+  const active = current ?? section
+  // Enquanto a sessão é restaurada (status 'loading'), não mostra nem visitante nem logado, para não piscar.
+  const { status } = useAuth()
   return (
     <header className="nav-wrap">
       <nav className="nav glass" aria-label="Principal">
-        <a href="#top" className="brand" aria-label="VibeGet, início">
-          <img src="./img/logo.png" alt="VibeGet" width="140" height="36" />
+        <a href="/#top" className="brand" aria-label="VibeGet, início">
+          <img src="/img/logo.png" alt="VibeGet" width="140" height="36" />
         </a>
         <ul className="nav-links">
           {NAV.map(([label, id]) => (
             <li key={id}>
-              <a href={`#${id}`} aria-current={active === id ? 'true' : undefined}>
+              <a href={id === 'vibes' ? '/vibes' : `/#${id}`} aria-current={active === id ? 'true' : undefined}>
                 {active === id && <motion.span layoutId="nav-pill" className="nav-pill" transition={spring} />}
                 <span>{label}</span>
               </a>
@@ -162,8 +159,13 @@ function Nav() {
           <button className="lang" type="button" aria-label="Idioma: português">
             <Globe size={16} /> PT <CaretDown size={12} weight="bold" />
           </button>
-          <a className="nav-login hide-sm" href={`${SITE}/login`}>Entrar</a>
-          <a className="btn btn-coin btn-sm" href={`${SITE}/cadastro`}>Criar conta</a>
+          {status === 'authed' && <UserChip />}
+          {status === 'guest' && (
+            <>
+              <a className="nav-login hide-sm" href="/login">Entrar</a>
+              <a className="btn btn-coin btn-sm" href="/cadastro">Criar conta</a>
+            </>
+          )}
           <button
             className="menu-btn"
             type="button"
@@ -186,9 +188,13 @@ function Nav() {
             onClick={() => setOpen(false)}
           >
             {NAV.map(([label, id]) => (
-              <a key={id} href={`#${id}`}>{label}<ArrowRight size={18} /></a>
+              <a key={id} href={id === 'vibes' ? '/vibes' : `/#${id}`}>{label}<ArrowRight size={18} /></a>
             ))}
-            <a href={`${SITE}/login`}>Entrar<ArrowRight size={18} /></a>
+            {status === 'authed' ? (
+              <Link to="/dashboard">Minha área<ArrowRight size={18} /></Link>
+            ) : (
+              <a href="/login">Entrar<ArrowRight size={18} /></a>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -325,7 +331,7 @@ function Simulator() {
           </div>
         </div>
 
-        <a className="btn btn-coin btn-block" href={`${SITE}/cadastro`}>
+        <a className="btn btn-coin btn-block" href="/cadastro">
           Dar Get de {brl(total)} <ArrowRight size={18} weight="bold" />
         </a>
       </div>
@@ -352,7 +358,7 @@ function Hero() {
           original. Perdeu a disputa? O GetCoin volta para a sua carteira e turbina o próximo Get.
         </p>
         <div className="hero-actions fade-in-4">
-          <Magnetic className="btn btn-coin btn-lg" href={`${SITE}/cadastro`}>
+          <Magnetic className="btn btn-coin btn-lg" href="/cadastro">
             Criar conta e ganhar GetCoin <ArrowRight size={20} weight="bold" />
           </Magnetic>
           <a className="hero-secondary" href="#como-funciona">
@@ -366,7 +372,7 @@ function Hero() {
         <ul>
           {vibes.map((v) => (
             <li key={v.slug}>
-              <a href={`${SITE}/produto/${v.slug}`} className="hero-live-item">
+              <a href={`/vibes/${v.slug}`} className="hero-live-item">
                 <span className={`hero-live-thumb ${v.dark ? 'is-dark' : ''}`}><img src={v.img} alt="" /></span>
                 <span className="hero-live-text">
                   <span>{v.name}</span>
@@ -439,7 +445,7 @@ function untilt(e) {
   el.style.setProperty('--rx', '0deg')
 }
 
-function spotlight(e) {
+export function spotlight(e) {
   const r = e.currentTarget.getBoundingClientRect()
   e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`)
   e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`)
@@ -452,7 +458,7 @@ function VibeCard({ v, now }) {
   const closing = left < 3 * 3600 * 1000
   const progress = Math.min(100, (v.gets / v.goal) * 100)
   const below = Math.round((1 - v.current / v.original) * 100)
-  const href = `${SITE}/produto/${v.slug}`
+  const href = `/vibes/${v.slug}`
   return (
     <motion.article
       layout
@@ -613,7 +619,7 @@ function Vibes() {
       </AnimatePresence>
 
       <div className="vibes-cta">
-        <Magnetic className="btn btn-coin btn-lg" href={`${SITE}/leiloes`}>
+        <Magnetic className="btn btn-coin btn-lg" href="/vibes">
           Ver todas as Vibes <ArrowRight size={20} weight="bold" />
         </Magnetic>      </div>
     </section>
@@ -718,7 +724,7 @@ function HowItWorks() {
         ))}
       </ol>
       <div className="vibes-cta how-cta">
-        <Magnetic className="btn btn-coin btn-lg" href={`${SITE}/cadastro`}>
+        <Magnetic className="btn btn-coin btn-lg" href="/cadastro">
           Criar conta grátis <ArrowRight size={20} weight="bold" />
         </Magnetic>
         <a className="text-link" href={`${SITE}/regras`}>Ler as regras completas <ArrowUpRight size={16} /></a>
@@ -790,7 +796,7 @@ function Levels() {
       </ul>
 
       <div className="vibes-cta how-cta">
-        <Magnetic className="btn btn-coin btn-lg" href={`${SITE}/cadastro`}>
+        <Magnetic className="btn btn-coin btn-lg" href="/cadastro">
           Começar como Explorador <ArrowRight size={20} weight="bold" />
         </Magnetic>
         <a className="text-link" href={`${SITE}/suba-de-nivel`}>Como subir de nível <ArrowUpRight size={16} /></a>
@@ -826,10 +832,10 @@ function Closing() {
         </h2>
         <p>Crie a conta, escolha um produto e dê o primeiro Get. Se não vencer, o saldo fica com você.</p>
         <div className="cd-actions">
-          <Magnetic className="btn btn-lg btn-coin" href={`${SITE}/cadastro`}>
+          <Magnetic className="btn btn-lg btn-coin" href="/cadastro">
             Criar conta grátis <ArrowRight size={20} weight="bold" />
           </Magnetic>
-          <a className="btn btn-lg btn-outline-light" href={`${SITE}/login`}>Já tenho conta</a>
+          <a className="btn btn-lg btn-outline-light" href="/login">Já tenho conta</a>
         </div>
         <a className="cd-mail" href="mailto:contato@leilaocash.com">contato@leilaocash.com</a>
       </div>
@@ -841,18 +847,18 @@ const FOOTER_LINKS = [
   {
     label: 'Plataforma',
     links: [
-      { title: 'Vibes abertas', href: '#vibes' },
-      { title: 'Como funciona', href: '#como-funciona' },
-      { title: 'GetCoin', href: '#getcoin' },
-      { title: 'Suba de nível', href: '#niveis' },
+      { title: 'Vibes abertas', href: '/vibes' },
+      { title: 'Como funciona', href: '/#como-funciona' },
+      { title: 'GetCoin', href: '/#getcoin' },
+      { title: 'Suba de nível', href: '/#niveis' },
     ],
   },
   {
     label: 'Sua conta',
     links: [
-      { title: 'Criar conta', href: `${SITE}/cadastro` },
-      { title: 'Entrar', href: `${SITE}/login` },
-      { title: 'Todas as Vibes', href: `${SITE}/leiloes` },
+      { title: 'Criar conta', href: "/cadastro" },
+      { title: 'Entrar', href: "/login" },
+      { title: 'Todas as Vibes', href: '/vibes' },
       { title: 'Dúvidas frequentes', href: `${SITE}/faq` },
     ],
   },
@@ -890,13 +896,13 @@ function FooterReveal({ delay = 0.1, className, children }) {
   )
 }
 
-function Footer() {
+export function Footer() {
   return (
     <footer className="footer-x">
       <span className="footer-glow" aria-hidden="true" />
       <div className="footer-grid">
         <FooterReveal className="footer-brand">
-          <img src="./img/logo.png" alt="VibeGet" width="140" height="36" />
+          <img src="/img/logo.png" alt="VibeGet" width="140" height="36" />
           <p>Leilões de eletrônicos novos, lacrados e com garantia, com GetCoin em cada Get.</p>
           <p className="footer-copy">© {new Date().getFullYear()} VibeGet. Todos os direitos reservados.</p>
         </FooterReveal>

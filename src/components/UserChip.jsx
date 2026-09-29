@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { CaretDown, House, SignOut, UserCircle, Wallet } from '@phosphor-icons/react'
+import { CaretDown, House, ShieldCheck, SignOut, UserCircle, Wallet } from '@phosphor-icons/react'
 import { logout } from '../lib/api.js'
-import { useAuth } from '../lib/auth.jsx'
+import { isStaff, useAuth } from '../lib/auth.jsx'
 import { levelOf } from '../lib/levels.js'
 
 const ease = [0.16, 1, 0.3, 1]
@@ -107,6 +107,11 @@ export default function UserChip({ afterLogout = '/' }) {
               <span className="uc-menu-email" title={user.email}>{user.email}</span>
               <span className="uc-menu-level">Nível <span className="mono">{level.n}</span> · {level.label}</span>
             </div>
+            {isStaff(user) && (
+              <Link to="/admin" role="menuitem" className="uc-item" onClick={() => setOpen(false)}>
+                <ShieldCheck size={18} aria-hidden="true" />Painel admin
+              </Link>
+            )}
             {ITEMS.map(({ to, label, Icon }) => (
               <Link key={to} to={to} role="menuitem" className="uc-item" onClick={() => setOpen(false)}>
                 <Icon size={18} aria-hidden="true" />{label}

@@ -30,6 +30,18 @@ export function RequireAuth({ children }) {
   return children
 }
 
+export const isStaff = (user) => user?.role === 'ADMIN' || user?.role === 'SUPPORT'
+
+/** Painel /admin: SUPPORT e ADMIN. Quem não é da equipe volta para a própria área. A API também confere o papel. */
+export function RequireStaff({ children }) {
+  const { status, user } = useAuth()
+  const location = useLocation()
+  if (status === 'loading') return null
+  if (status === 'guest') return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />
+  if (!isStaff(user)) return <Navigate to="/dashboard" replace />
+  return children
+}
+
 /** Rota de destino segura: só caminhos internos, nunca "//host" ou URL absoluta. */
 export function safeNext(value, fallback = '/dashboard') {
   return value && value.startsWith('/') && !value.startsWith('//') ? value : fallback

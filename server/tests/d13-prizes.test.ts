@@ -128,6 +128,25 @@ describe('D13 — entrega do prêmio', () => {
   })
 })
 
+describe('painel admin', () => {
+  it('/admin/dashboard traz a fila de pendências (saques, prêmios a enviar e aguardando endereço)', async () => {
+    const before = (await api('GET', '/admin/dashboard', support.accessToken)).json().data.pending
+    const { winner, prize } = await wonVibe()
+    const mid = (await api('GET', '/admin/dashboard', support.accessToken)).json().data.pending
+    expect(mid.prizesAwaitingAddress).toBe(before.prizesAwaitingAddress + 1)
+    await api('PUT', `/me/prizes/${prize.id}/address`, winner.accessToken, ADDRESS)
+    await t.db.transaction((tx) => applyCashMovement(tx, { userId: winner.id, amountCents: 5000, type: 'ADJUSTMENT', reason: 'teste' }))
+    const w = await api('POST', '/me/withdrawals', winner.accessToken, { amountCents: 2500, pixKeyType: 'EMAIL', pixKey: 'fila@exemplo.com' }, { 'idempotency-key': 'dash-pending-01' })
+    expect(w.statusCode, w.body).toBe(201)
+    const after = (await api('GET', '/admin/dashboard', support.accessToken)).json().data.pending
+    expect(after).toMatchObject({
+      prizesAwaitingAddress: before.prizesAwaitingAddress,
+      prizesToShip: before.prizesToShip + 1,
+      withdrawals: { count: before.withdrawals.count + 1, totalCents: before.withdrawals.totalCents + 2500 },
+    })
+  })
+})
+
 describe('favoritas', () => {
   it('/me/favorites/vibes lista as Vibes favoritadas no formato da vitrine', async () => {
     const u = await userWithToken(t)

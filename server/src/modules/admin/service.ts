@@ -2,7 +2,7 @@ import { and, count, desc, eq, gte, ilike, isNull, lte, ne, or, sql, sum, type S
 import type { z } from 'zod'
 import type { AppContext, AuthInfo, RequestMeta } from '../../context.js'
 import type { Tx } from '../../db/client.js'
-import { auditLogs, getcoinLedger, gets, payments, products, users, vibes } from '../../db/schema.js'
+import { auditLogs, getcoinLedger, gets, payments, prizeDeliveries, products, users, vibes, withdrawals } from '../../db/schema.js'
 import { audit } from '../../lib/audit.js'
 import { normalizeCpf } from '../../lib/cpf.js'
 import { AppError, conflict, forbidden, isUniqueViolation, notFound } from '../../lib/errors.js'
@@ -87,6 +87,21 @@ export async function adminDashboard(ctx: AppContext) {
     gets: { last24h: gets24h?.n ?? 0 },
     // D12: receita de taxas do marketplace (Σ fee_cents dos pedidos pagos)
     market: await marketFeeRevenue(db),
+    // Fila de trabalho do painel: o que espera uma ação da equipe
+    pending: await pendingWork(db),
+  }
+}
+
+async function pendingWork(db: AppContext['db']) {
+  const [[w], prizes] = await Promise.all([
+    db.select({ n: count(), total: sum(withdrawals.amountCents) }).from(withdrawals).where(eq(withdrawals.status, 'PENDING')),
+    db.select({ status: prizeDeliveries.status, n: count() }).from(prizeDeliveries).groupBy(prizeDeliveries.status),
+  ])
+  const byStatus = Object.fromEntries(prizes.map((p) => [p.status, p.n]))
+  return {
+    withdrawals: { count: w?.n ?? 0, totalCents: toNumber(w?.total) },
+    prizesToShip: byStatus.PREPARING ?? 0,
+    prizesAwaitingAddress: byStatus.AWAITING_ADDRESS ?? 0,
   }
 }
 

@@ -684,6 +684,14 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - ponto vermelho em Prêmios quando há prêmio aguardando endereço;
     - cada aba tem estado vazio com link para `/vibes`;
     - o aviso do Início abre `?aba=premios`.
+  - **Painel `/admin`, fase 1 (operação):**
+    - `RequireStaff` (SUPPORT e ADMIN; usuário comum volta para `/dashboard`) e `AdminShell` com menu lateral, que no celular vira faixa rolável, e contadores de pendência;
+    - páginas: Visão geral (fila "Esperando a equipe" + números), Saques (pagar com confirmação em dois passos; recusar com motivo), Entregas (enviar com transportadora e rastreio, corrigir rastreio, confirmar entrega) e Vibes (filtro por status, encerrar agora e cancelar com confirmação);
+    - SUPPORT vê tudo, sem botões de ação;
+    - "Painel admin" no menu do usuário só para a equipe.
+    - **Backend:** `GET /admin/dashboard` ganhou `pending = { withdrawals: { count, totalCents }, prizesToShip, prizesAwaitingAddress }`. Teste novo em `d13-prizes.test.ts`; suíte **520/520**.
+    - **Testado no navegador** (admin em contexto isolado): pagar o saque de R$ 20, corrigir rastreio, entregar o prêmio e encerrar a `vibe-teste-admin` (criada para o teste, encerrou sem vencedor); usuário comum barrado em `/admin`.
+    - **Notado:** se a API está fora do ar no carregamento, a renovação da sessão falha e o front trata como deslogado (vai para `/login`). Era assim antes; vale tentar de novo com erro de rede em vez de deslogar.
   - **API de dev reiniciada sem matar o processo:** foi enviado Ctrl+C (SIGINT) ao console dela por um processo auxiliar (`AttachConsole` + `GenerateConsoleCtrlEvent`), e o log registrou "encerrando SIGINT".
 
 ## 11. Próximos passos
@@ -715,7 +723,7 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 6. ~~Cliente precisa definir bônus~~ (D3: o ADMIN define em `/admin/settings`). Ainda pendente do cliente: preços reais dos 4 produtos estimados e se `goal_gets` encerra a Vibe.
 7. ~~Telas `/login` e `/cadastro`~~ (feito em 2026-09-25, ver seção 13). Próximo no front:
    - 7.1 ~~Dashboard completo~~ (feito; em 2026-09-29 entraram o resgate de cupom, a exportação, a exclusão de conta, sair de todos os dispositivos e os limites de saque).
-   - 7.2 Painel `/admin`: configurações (D3), cupons (D4), cadastro de leilão com upload (D5), usuários e audit log, saques, pacotes, marketplace e **entregas de prêmio (D13: `GET /admin/prizes`, `PATCH /admin/prizes/:id`)**.
+   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). **Falta:** cadastro de leilão com upload (D5) e edição de produto/Vibe, usuários (papel, suspensão, ajustes de GetCoin e R$), pacotes de GetCoin, cupons (D4), configurações (D3, saques, GetCoin, marketplace), supervisão do marketplace e audit log.
    - 7.2.1 Cliente: confirmar a regra D13 (bloquear exclusão de conta com prêmio a receber; endereço editável até o envio) e se haverá prazo para o vencedor confirmar o endereço.
    - 7.3 Tela de Vibe (`/produto/:slug`) com o botão de Get, usando `getsCloseAt` e tratando `409 VIBE_CLOSING`.
    - 7.4 ~~Refresh entre abas~~ (feito em 2026-09-29 com Web Locks e BroadcastChannel).

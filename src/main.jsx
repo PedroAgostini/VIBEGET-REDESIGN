@@ -18,7 +18,12 @@ import Gets from './pages/dashboard/Gets.jsx'
 import Wallet from './pages/dashboard/Wallet.jsx'
 import Buy from './pages/dashboard/Buy.jsx'
 import Market from './pages/dashboard/Market.jsx'
-import { AuthProvider, RequireAuth } from './lib/auth.jsx'
+import AdminShell from './pages/admin/AdminShell.jsx'
+import Overview from './pages/admin/Overview.jsx'
+import Withdrawals from './pages/admin/Withdrawals.jsx'
+import Deliveries from './pages/admin/Deliveries.jsx'
+import AdminVibes from './pages/admin/AdminVibes.jsx'
+import { AuthProvider, RequireAuth, RequireStaff } from './lib/auth.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -40,6 +45,12 @@ createRoot(document.getElementById('root')).render(
             <Route path="comprar" element={<Buy />} />
             <Route path="marketplace" element={<Market />} />
             <Route path="conta" element={<Account />} />
+          </Route>
+          <Route path="/admin" element={<RequireStaff><AdminShell /></RequireStaff>}>
+            <Route index element={<Overview />} />
+            <Route path="saques" element={<Withdrawals />} />
+            <Route path="entregas" element={<Deliveries />} />
+            <Route path="vibes" element={<AdminVibes />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

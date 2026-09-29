@@ -705,6 +705,12 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - envio único em `POST /admin/auctions`.
     - Em Vibes, rascunho ganhou "Agendar" e "Publicar agora", e agendada ganhou "Abrir agora" (`PATCH` com `status` e `startsAt`).
     - Testado: cadastro com 2 fotos e troca de capa, gravação conferida pela API, publicar o rascunho, página pública com as fotos, cancelar. O produto de teste ficou cancelado.
+  - **Visual do painel `/admin` revisto:**
+    - menu em grupos (Operação, Catálogo) com cartão do papel no rodapé e luz âmbar atrás do conteúdo;
+    - Visão geral com data e resumo do dia, cartões de pendência verticais (compactos em 3 colunas no celular), números com ícone e painéis com barra empilhada (Vibes por situação) e barra de gasto (GetCoin);
+    - Vibes em linhas compactas com foto no pedestal (`GET /admin/vibes` passou a trazer `product.imageUrl`), data curta, nome como link para a página pública e faixa de ações só quando há ação;
+    - Saques com avatar de iniciais.
+  - **Sessão resiliente:** falha de rede ou 5xx na renovação não desloga mais (`isTransient` em `api.js`); o `AuthProvider` tenta de novo até 6 vezes com espera crescente. Antes, reiniciar a API mandava quem estava com a página aberta para o login.
   - **API de dev reiniciada sem matar o processo:** foi enviado Ctrl+C (SIGINT) ao console dela por um processo auxiliar (`AttachConsole` + `GenerateConsoleCtrlEvent`), e o log registrou "encerrando SIGINT".
 
 ## 11. Próximos passos

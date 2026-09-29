@@ -10,6 +10,7 @@ import { ConfirmAction, FilterChips, ReadOnlyNote, useIsAdmin, useStatusFilter }
 const FILTERS = [['PENDING', 'Pendentes'], ['PAID', 'Pagos'], ['REJECTED', 'Recusados'], ['ALL', 'Todos']]
 const STATUS = { PENDING: ['Pendente', 'wait'], PAID: ['Pago', 'ok'], REJECTED: ['Recusado', 'off'] }
 const KEY_LABEL = { CPF: 'CPF', EMAIL: 'E-mail', PHONE: 'Celular', RANDOM: 'Chave aleatória' }
+const initials = (name = '') => name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?'
 /** Só para leitura; a cópia usa a chave como a API guarda. */
 const keyFmt = (type, key) => (type === 'CPF' ? key.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4') : key)
 
@@ -66,9 +67,12 @@ function WithdrawalRow({ w, isAdmin, onChanged }) {
           <p className="mono ad-money">{brl(w.amountCents)}</p>
           <span className={`dg-pill dg-pill-${tone}`}>{label}</span>
         </div>
-        <div className="ad-item-who">
-          <p className="ad-who-name">{w.userName}</p>
-          <p className="ad-who-meta">{w.userEmail} · pedido em <span className="mono">{dateFmt.format(new Date(w.createdAt))}</span></p>
+        <div className="ad-item-who ad-person">
+          <span className="mk-avatar" aria-hidden="true">{initials(w.userName)}</span>
+          <div>
+            <p className="ad-who-name">{w.userName}</p>
+            <p className="ad-who-meta">{w.userEmail} · pedido em <span className="mono">{dateFmt.format(new Date(w.createdAt))}</span></p>
+          </div>
         </div>
         <div className="ad-item-key">
           <p className="ad-key-type">Pix · {KEY_LABEL[w.pixKeyType] ?? w.pixKeyType}</p>

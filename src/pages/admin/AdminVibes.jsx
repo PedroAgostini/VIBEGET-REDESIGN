@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
-import { ArrowSquareOut, Gavel, Plus } from '@phosphor-icons/react'
+import { ArrowSquareOut, Gavel, Package, Plus } from '@phosphor-icons/react'
 import { api, brl } from '../../lib/api.js'
 import { useApi } from '../../lib/useApi.js'
 import { countdown } from '../../App.jsx'
@@ -9,6 +9,7 @@ import { LoadError, PageHead, Pager, Skeleton, dateFmt } from '../dashboard/ui.j
 import { ConfirmAction, FilterChips, ReadOnlyNote, useIsAdmin, useStatusFilter } from './ui.jsx'
 
 const FILTERS = [['LIVE', 'Ao vivo'], ['SCHEDULED', 'Agendadas'], ['DRAFT', 'Rascunhos'], ['ENDED', 'Encerradas'], ['CANCELLED', 'Canceladas'], ['ALL', 'Todas']]
+const shortFmt = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 const STATUS = { LIVE: ['Ao vivo', 'lead'], SCHEDULED: ['Agendada', 'wait'], DRAFT: ['Rascunho', 'off'], ENDED: ['Encerrada', 'ok'], CANCELLED: ['Cancelada', 'off'] }
 
 function useNow(ms = 1000) {
@@ -26,8 +27,8 @@ function When({ v, now }) {
     return <><span className="ad-when-label">Termina em</span><span className="mono">{left > 0 ? countdown(left) : 'encerrando'}</span></>
   }
   if (v.status === 'SCHEDULED') return <><span className="ad-when-label">Abre em</span><span className="mono">{countdown(Math.max(0, new Date(v.startsAt).getTime() - now))}</span></>
-  if (v.status === 'ENDED') return <><span className="ad-when-label">Encerrou em</span><span className="mono">{dateFmt.format(new Date(v.settledAt ?? v.endsAt))}</span></>
-  return <><span className="ad-when-label">Termina</span><span className="mono">{dateFmt.format(new Date(v.endsAt))}</span></>
+  if (v.status === 'ENDED') return <><span className="ad-when-label">Encerrou em</span><span className="mono">{shortFmt.format(new Date(v.settledAt ?? v.endsAt))}</span></>
+  return <><span className="ad-when-label">Termina</span><span className="mono">{shortFmt.format(new Date(v.endsAt))}</span></>
 }
 
 function VibeRow({ v, now, isAdmin, onChanged }) {
@@ -50,15 +51,24 @@ function VibeRow({ v, now, isAdmin, onChanged }) {
     onChanged()
   }
   const startsLater = new Date(v.startsAt).getTime() > now
+  const showPage = v.status !== 'DRAFT' && v.status !== 'CANCELLED'
+  const hasActions = isAdmin && open
 
   return (
-    <li className="ad-item glass">
+    <li className={`ad-vibe glass ${v.status === 'LIVE' ? 'is-live' : ''}`}>
       <div className="ad-vibe-row">
-        <div className="ad-vibe-name">
-          <p className="ad-who-name">{v.product.name}</p>
-          <p className="ad-who-meta">{CAT_LABEL[v.product.category] ?? v.product.category} · Get mínimo <span className="mono">{brl(v.minGetCents)}</span> · cashback <span className="mono">{v.cashbackPercent}%</span></p>
+        <div className="pz-plate ad-vibe-plate">
+          {v.product.imageUrl ? <img src={v.product.imageUrl} alt="" loading="lazy" /> : <Package size={22} weight="duotone" aria-hidden="true" />}
         </div>
-        <span className={`dg-pill dg-pill-${tone}`}>{label}</span>
+        <div className="ad-vibe-name">
+          <p className="ad-who-name">
+            {showPage
+              ? <a className="ad-vibe-link" href={`/vibes/${v.slug}`} target="_blank" rel="noreferrer">{v.product.name}<ArrowSquareOut size={14} aria-label="abre a página pública" /></a>
+              : v.product.name}
+            <span className={`dg-pill dg-pill-${tone}`}>{label}</span>
+          </p>
+          <p className="ad-who-meta">{CAT_LABEL[v.product.category] ?? v.product.category} · mínimo <span className="mono">{brl(v.minGetCents)}</span> · cashback <span className="mono">{v.cashbackPercent}%</span></p>
+        </div>
         <p className="ad-when"><When v={v} now={now} /></p>
         <dl className="ad-vibe-figs">
           <div><dt>Gets</dt><dd className="mono">{v.confirmedGets}{v.goalGets ? `/${v.goalGets}` : ''}</dd></div>
@@ -66,10 +76,7 @@ function VibeRow({ v, now, isAdmin, onChanged }) {
           <div><dt>{v.status === 'ENDED' ? 'Vencedor' : 'De'}</dt><dd>{v.topGet?.by ?? '—'}</dd></div>
         </dl>
       </div>
-      <div className="ad-item-actions">
-        {v.status !== 'DRAFT' && v.status !== 'CANCELLED' && (
-          <a className="btn btn-sm btn-glass" href={`/vibes/${v.slug}`} target="_blank" rel="noreferrer">Ver página<ArrowSquareOut size={15} aria-hidden="true" /></a>
-        )}
+      {hasActions && <div className="ad-item-actions">
         {isAdmin && open && (
           <ConfirmAction
             label="Cancelar" tone="danger" confirmLabel="Cancelar a Vibe"
@@ -98,7 +105,7 @@ function VibeRow({ v, now, isAdmin, onChanged }) {
             onConfirm={close}
           />
         )}
-      </div>
+      </div>}
     </li>
   )
 }

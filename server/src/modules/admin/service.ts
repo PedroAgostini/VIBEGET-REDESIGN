@@ -367,7 +367,7 @@ export async function listVibes(ctx: AppContext, q: In<typeof listVibesQuery>) {
   const where = conds.length ? and(...conds) : undefined
   const [rows, [{ total } = { total: 0 }]] = await Promise.all([
     ctx.db
-      .select({ vibe: vibes, product: { id: products.id, name: products.name, slug: products.slug, category: products.category } })
+      .select({ vibe: vibes, product: { id: products.id, name: products.name, slug: products.slug, category: products.category, imageUrl: products.imageUrl } })
       .from(vibes)
       .innerJoin(products, eq(products.id, vibes.productId))
       .where(where)

@@ -40,6 +40,9 @@ function setSession(token, user, { share = false } = {}) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+/** Falha de rede ou do servidor, não de credencial. */
+export const isTransient = (err) => err?.status === 0 || err?.status >= 500
+
 async function raw(path, { method = 'GET', body, auth = false, headers: extra } = {}) {
   const headers = { 'X-Requested-With': 'fetch', ...extra }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
@@ -80,7 +83,8 @@ export function refreshSession() {
       return data.user
     })
       .catch((err) => {
-        setSession(null, null)
+        // Sem conexão ou servidor fora do ar (5xx) não prova que a sessão acabou: mantém e deixa quem chamou tentar de novo.
+        if (!isTransient(err)) setSession(null, null)
         throw err
       })
       .finally(() => {

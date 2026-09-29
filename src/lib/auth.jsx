@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { onSessionChange, refreshSession } from './api.js'
+import { isTransient, onSessionChange, refreshSession } from './api.js'
 
 const AuthContext = createContext(null)
 
@@ -10,8 +10,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const off = onSessionChange((user) => setState({ status: user ? 'authed' : 'guest', user }))
-    refreshSession().catch(() => setState({ status: 'guest', user: null }))
-    return off
+    // Se o servidor estiver fora do ar por instantes (deploy, reinício), tenta de novo antes de tratar como deslogado.
+    let timer
+    let alive = true
+    const restore = (attempt = 0) =>
+      refreshSession().catch((err) => {
+        if (!alive) return
+        if (isTransient(err) && attempt < 6) timer = setTimeout(() => restore(attempt + 1), Math.min(1000 * 2 ** attempt, 15000))
+        else setState({ status: 'guest', user: null })
+      })
+    restore()
+    return () => {
+      alive = false
+      clearTimeout(timer)
+      off()
+    }
   }, [])
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>

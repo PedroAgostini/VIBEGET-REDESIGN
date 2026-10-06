@@ -728,6 +728,12 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - `GET /admin/users/:id` passou a trazer `cashBalanceCents`;
     - `GET /admin/audit-logs` passou a trazer `actorName` (left join em `users`).
     - Dois testes novos em `d13-prizes.test.ts`; suíte **522/522**.
+  - **Configurações em `/admin/configuracoes`** (só ADMIN; grupo "Sistema" no menu, que some para SUPPORT):
+    - quatro blocos ligados às rotas que já existiam: Bônus e Vibes (`/admin/settings`), Saques (`/withdrawals`), Compra de GetCoin (`/getcoin`) e Marketplace (`/market`);
+    - campos em R$, GetCoins ou números com unidade, e interruptores para a compra avulsa e o marketplace;
+    - mesmas regras da API na tela (limites e prazo ≤ corte, mínimo ≤ máximo), com texto em português;
+    - "Revisar alterações" mostra o antes → depois e pede confirmação; "Últimas alterações" lê `audit-logs?entity=settings`.
+    - Testado: a regra do prazo bloqueou 70 s com corte de 60 s; o saque mínimo foi para R$ 15,00, apareceu na hora na Carteira do usuário e **voltou para R$ 10,00**. Também conferido no celular.
   - **Testado no navegador:** busca, filtros, crédito de R$ 5,00 no Rafael (`rafael.mk@`, saldo R$ 0 → R$ 5,00, histórico atualizado), passo de confirmação da suspensão (não confirmado, para manter os anúncios dele) e celular sem rolagem lateral.
 
 ## 11. Próximos passos
@@ -759,7 +765,7 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 6. ~~Cliente precisa definir bônus~~ (D3: o ADMIN define em `/admin/settings`). Ainda pendente do cliente: preços reais dos 4 produtos estimados e se `goal_gets` encerra a Vibe.
 7. ~~Telas `/login` e `/cadastro`~~ (feito em 2026-09-25, ver seção 13). Próximo no front:
    - 7.1 ~~Dashboard completo~~ (feito; em 2026-09-29 entraram o resgate de cupom, a exportação, a exclusão de conta, sair de todos os dispositivos e os limites de saque).
-   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). ~~Cadastro de leilão com upload (D5)~~ (feito em 2026-09-29). ~~Usuários (papel, suspensão, ajustes de GetCoin e R$)~~ (feito em 2026-10-06). **Falta:** edição de produto/Vibe já criados, pacotes de GetCoin, cupons (D4), configurações (D3, saques, GetCoin, marketplace), supervisão do marketplace e audit log.
+   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). ~~Cadastro de leilão com upload (D5)~~ (feito em 2026-09-29). ~~Usuários (papel, suspensão, ajustes de GetCoin e R$)~~ e ~~configurações (D3, saques, GetCoin, marketplace)~~ (feitos em 2026-10-06). **Falta:** edição de produto/Vibe já criados, pacotes de GetCoin, cupons (D4), supervisão do marketplace e audit log.
    - 7.2.1 Cliente: confirmar a regra D13 (bloquear exclusão de conta com prêmio a receber; endereço editável até o envio) e se haverá prazo para o vencedor confirmar o endereço.
    - 7.3 Tela de Vibe (`/produto/:slug`) com o botão de Get, usando `getsCloseAt` e tratando `409 VIBE_CLOSING`.
    - 7.4 ~~Refresh entre abas~~ (feito em 2026-09-29 com Web Locks e BroadcastChannel).

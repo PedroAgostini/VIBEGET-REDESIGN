@@ -26,6 +26,7 @@ import AdminVibes from './pages/admin/AdminVibes.jsx'
 import NewAuction from './pages/admin/NewAuction.jsx'
 import Users from './pages/admin/Users.jsx'
 import UserDetail from './pages/admin/UserDetail.jsx'
+import Settings from './pages/admin/Settings.jsx'
 import { AuthProvider, RequireAuth, RequireStaff } from './lib/auth.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -55,6 +56,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="entregas" element={<Deliveries />} />
             <Route path="usuarios" element={<Users />} />
             <Route path="usuarios/:id" element={<UserDetail />} />
+            <Route path="configuracoes" element={<Settings />} />
             <Route path="vibes" element={<AdminVibes />} />
             <Route path="vibes/nova" element={<NewAuction />} />
           </Route>

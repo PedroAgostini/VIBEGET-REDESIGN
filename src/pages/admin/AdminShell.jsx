@@ -1,6 +1,6 @@
 import { motion, MotionConfig } from 'framer-motion'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { ArrowSquareOut, ChartLineUp, Gavel, Money, Package, PlusCircle, ShieldCheck, Users } from '@phosphor-icons/react'
+import { ArrowSquareOut, ChartLineUp, Gavel, GearSix, Money, Package, PlusCircle, ShieldCheck, Users } from '@phosphor-icons/react'
 import UserChip from '../../components/UserChip.jsx'
 import { useApi } from '../../lib/useApi.js'
 import { useAuth } from '../../lib/auth.jsx'
@@ -17,6 +17,9 @@ const GROUPS = [
   ['Catálogo', [
     { to: '/admin/vibes', label: 'Vibes', Icon: Gavel, match: (path) => path.startsWith('/admin/vibes') && path !== '/admin/vibes/nova' },
     { to: '/admin/vibes/nova', label: 'Novo leilão', Icon: PlusCircle, adminOnly: true },
+  ]],
+  ['Sistema', [
+    { to: '/admin/configuracoes', label: 'Configurações', Icon: GearSix, adminOnly: true },
   ]],
 ]
 
@@ -47,11 +50,11 @@ export default function AdminShell() {
         <div className="ad-body">
           <aside className="ad-side">
             <nav className="ad-nav" aria-label="Painel administrativo">
-              {GROUPS.map(([title, items]) => (
+              {GROUPS.map(([title, items]) => [title, items.filter((i) => !i.adminOnly || isAdmin)]).filter(([, items]) => items.length > 0).map(([title, items]) => (
                 <div key={title} className="ad-nav-group">
                   <p className="ad-nav-title">{title}</p>
                   <ul>
-                    {items.filter((i) => !i.adminOnly || isAdmin).map((item) => {
+                    {items.map((item) => {
                       const n = item.badge?.(pending)
                       const active = isActive(item)
                       return (

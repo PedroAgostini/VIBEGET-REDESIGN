@@ -27,6 +27,7 @@ import NewAuction from './pages/admin/NewAuction.jsx'
 import Users from './pages/admin/Users.jsx'
 import UserDetail from './pages/admin/UserDetail.jsx'
 import Settings from './pages/admin/Settings.jsx'
+import Coupons from './pages/admin/Coupons.jsx'
 import { AuthProvider, RequireAuth, RequireStaff } from './lib/auth.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -57,6 +58,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="usuarios" element={<Users />} />
             <Route path="usuarios/:id" element={<UserDetail />} />
             <Route path="configuracoes" element={<Settings />} />
+            <Route path="cupons" element={<Coupons />} />
             <Route path="vibes" element={<AdminVibes />} />
             <Route path="vibes/nova" element={<NewAuction />} />
           </Route>

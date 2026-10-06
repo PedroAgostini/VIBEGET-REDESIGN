@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq } from 'drizzle-orm'
+import { and, asc, count, desc, eq, sql } from 'drizzle-orm'
 import type { z } from 'zod'
 import type { AppContext, AuthInfo, RequestMeta } from '../../context.js'
 import type { DbOrTx } from '../../db/client.js'
@@ -262,8 +262,21 @@ export async function customPurchaseConfig(ctx: AppContext) {
 
 // ---------- admin: pacotes ----------
 
-export function listPackagesAdmin(ctx: AppContext) {
-  return ctx.db.select().from(getcoinPackages).orderBy(asc(getcoinPackages.sortOrder), asc(getcoinPackages.priceCents))
+/** Pacotes com contagem de compras: com alguma compra, o painel oferece desativar em vez de excluir. */
+export async function listPackagesAdmin(ctx: AppContext) {
+  const [packs, sales] = await Promise.all([
+    ctx.db.select().from(getcoinPackages).orderBy(asc(getcoinPackages.sortOrder), asc(getcoinPackages.priceCents)),
+    ctx.db
+      .select({
+        packageId: getcoinPurchases.packageId,
+        total: count(),
+        paid: sql<number>`count(*) filter (where ${getcoinPurchases.status} = 'PAID')`.mapWith(Number),
+      })
+      .from(getcoinPurchases)
+      .groupBy(getcoinPurchases.packageId),
+  ])
+  const byPackage = new Map(sales.map((s) => [s.packageId, s]))
+  return packs.map((p) => ({ ...p, purchasesCount: byPackage.get(p.id)?.total ?? 0, paidCount: byPackage.get(p.id)?.paid ?? 0 }))
 }
 
 export async function createPackage(ctx: AppContext, actor: AuthInfo, input: In<typeof createPackageSchema>, meta: RequestMeta) {

@@ -46,6 +46,17 @@ describe('D7 — pacotes e compra de GetCoin', () => {
     expect((await api('DELETE', `/admin/getcoin-packages/${off.id}`, admin.accessToken)).statusCode).toBe(204)
   })
 
+  it('lista do admin traz quantas compras cada pacote teve (total e pagas)', async () => {
+    const p = await makePackage({ name: 'Contado' })
+    const u = await userWithToken(t)
+    await fundCash(u.id, 900)
+    const buy = await api('POST', '/me/getcoin-purchases', u.accessToken, { packageId: p.id, method: 'BALANCE' }, { 'idempotency-key': 'pkg-count-0001' })
+    expect(buy.statusCode, buy.body).toBe(201)
+    const row = (await api('GET', '/admin/getcoin-packages', admin.accessToken)).json().data.find((x: { id: string }) => x.id === p.id)
+    expect(row).toMatchObject({ purchasesCount: 1, paidCount: 1 })
+    expect((await api('DELETE', `/admin/getcoin-packages/${p.id}`, admin.accessToken)).json().error.code).toBe('PACKAGE_IN_USE')
+  })
+
   it('PIX: pendente -> simulate PAID credita PURCHASE + PURCHASE_BONUS; outro usuário não vê (404); idempotente', async () => {
     const p = await makePackage()
     const u = await userWithToken(t)

@@ -1,6 +1,6 @@
 import { motion, MotionConfig } from 'framer-motion'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { ArrowSquareOut, ChartLineUp, Gavel, GearSix, Money, Package, PlusCircle, ShieldCheck, Ticket, Users } from '@phosphor-icons/react'
+import { ArrowSquareOut, ChartLineUp, Coins, Gavel, GearSix, Money, Package, PlusCircle, ShieldCheck, Ticket, Users } from '@phosphor-icons/react'
 import UserChip from '../../components/UserChip.jsx'
 import { useApi } from '../../lib/useApi.js'
 import { useAuth } from '../../lib/auth.jsx'
@@ -18,6 +18,7 @@ const GROUPS = [
     { to: '/admin/vibes', label: 'Vibes', Icon: Gavel, match: (path) => path.startsWith('/admin/vibes') && path !== '/admin/vibes/nova' },
     { to: '/admin/vibes/nova', label: 'Novo leilão', Icon: PlusCircle, adminOnly: true },
     { to: '/admin/cupons', label: 'Cupons', Icon: Ticket },
+    { to: '/admin/pacotes', label: 'Pacotes', Icon: Coins, adminOnly: true },
   ]],
   ['Sistema', [
     { to: '/admin/configuracoes', label: 'Configurações', Icon: GearSix, adminOnly: true },

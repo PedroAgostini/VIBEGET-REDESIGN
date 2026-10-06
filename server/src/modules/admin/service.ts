@@ -388,6 +388,22 @@ export async function listVibes(ctx: AppContext, q: In<typeof listVibesQuery>) {
   )
 }
 
+/** Vibe com o produto completo (fotos, ficha técnica), para a tela de edição do painel. */
+export async function getVibe(ctx: AppContext, id: string) {
+  const [row] = await ctx.db
+    .select({ vibe: vibes, product: products })
+    .from(vibes)
+    .innerJoin(products, eq(products.id, vibes.productId))
+    .where(eq(vibes.id, id))
+  if (!row) throw notFound('Vibe não encontrada.')
+  const [stats, [same]] = await Promise.all([
+    vibeStats(ctx.db, [id]),
+    // O produto pode estar em outras Vibes: editar o produto muda todas elas.
+    ctx.db.select({ n: count() }).from(vibes).where(eq(vibes.productId, row.product.id)),
+  ])
+  return { ...row.vibe, product: row.product, ...stats.get(id)!, productVibesCount: same?.n ?? 1 }
+}
+
 function assertVibeDatesForStatus(input: { status: string; endsAt: Date }) {
   if ((input.status === 'LIVE' || input.status === 'SCHEDULED') && input.endsAt <= new Date()) {
     throw new AppError(400, 'VALIDATION_ERROR', 'Uma Vibe LIVE/SCHEDULED precisa terminar no futuro.')

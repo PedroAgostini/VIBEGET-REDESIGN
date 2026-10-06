@@ -88,6 +88,10 @@ export default async function adminRoutes(app: FastifyInstance) {
     const input = parse(createVibeSchema, req.body)
     return reply.status(201).send({ data: await admin.createVibe(ctx, authOf(req), input, metaOf(req)) })
   })
+  app.get('/admin/vibes/:id', async (req) => {
+    const { id } = parse(idParams, req.params)
+    return { data: await admin.getVibe(ctx, id) }
+  })
   app.patch('/admin/vibes/:id', adminOnly, async (req) => {
     const { id } = parse(idParams, req.params)
     const input = parse(patchVibeSchema, req.body)

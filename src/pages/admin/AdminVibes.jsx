@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
-import { ArrowSquareOut, Gavel, Package, Plus } from '@phosphor-icons/react'
+import { ArrowSquareOut, Gavel, Package, PencilSimple, Plus } from '@phosphor-icons/react'
 import { api, brl } from '../../lib/api.js'
 import { useApi } from '../../lib/useApi.js'
 import { countdown } from '../../App.jsx'
@@ -52,7 +52,7 @@ function VibeRow({ v, now, isAdmin, onChanged }) {
   }
   const startsLater = new Date(v.startsAt).getTime() > now
   const showPage = v.status !== 'DRAFT' && v.status !== 'CANCELLED'
-  const hasActions = isAdmin && open
+  const hasActions = isAdmin
 
   return (
     <li className={`ad-vibe glass ${v.status === 'LIVE' ? 'is-live' : ''}`}>
@@ -77,6 +77,7 @@ function VibeRow({ v, now, isAdmin, onChanged }) {
         </dl>
       </div>
       {hasActions && <div className="ad-item-actions">
+        <Link to={`/admin/vibes/${v.id}/editar`} className="btn btn-sm btn-glass"><PencilSimple size={16} aria-hidden="true" />{open ? 'Editar' : 'Corrigir produto'}</Link>
         {isAdmin && open && (
           <ConfirmAction
             label="Cancelar" tone="danger" confirmLabel="Cancelar a Vibe"

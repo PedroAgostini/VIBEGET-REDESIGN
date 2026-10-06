@@ -1605,6 +1605,19 @@ a.ad-legend-row:hover { color: var(--ink); }
 .pk-toggle { position: relative; align-items: flex-start; }
 .pk-toggle b { display: block; font-size: 0.92rem; color: var(--ink); }
 
+/* Editar leilão (src/pages/admin/EditAuction.jsx) */
+.ea-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: -6px; }
+.ea-head .dg-pill { margin: 0; }
+.ea-page { font-size: 0.86rem; font-weight: 600; }
+.ea-saved { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: var(--r-sm); background: rgba(234, 173, 83, 0.1); border: 1px solid rgba(234, 173, 83, 0.35); font-size: 0.9rem; color: var(--ink); }
+.ea-saved svg { color: var(--coin); }
+.ea-note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; border-radius: var(--r-sm); background: rgba(255, 226, 200, 0.05); border: 1px solid var(--line); font-size: 0.86rem; color: var(--ink-2); }
+.ea-note svg { flex: none; margin-top: 2px; color: var(--coin); }
+.ea-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px 18px; }
+.ea-actions .af-submit { width: auto; }
+.ea-count { font-size: 0.86rem; color: var(--muted); }
+.af-input:disabled { opacity: 0.55; cursor: not-allowed; }
+
 /* Novo leilão (src/pages/admin/NewAuction.jsx) */
 .na { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
 .na-main { display: grid; gap: 18px; min-width: 0; }

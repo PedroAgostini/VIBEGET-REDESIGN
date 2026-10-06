@@ -166,6 +166,20 @@ describe('detalhe do usuário no admin', () => {
   })
 })
 
+describe('edição de Vibe no admin', () => {
+  it('/admin/vibes/:id traz o produto completo; SUPPORT lê; com a Vibe ao vivo só fim e meta mudam', async () => {
+    const { vibe, product } = await createLiveVibe(t)
+    const r = await api('GET', `/admin/vibes/${vibe.id}`, support.accessToken)
+    expect(r.statusCode, r.body).toBe(200)
+    expect(r.json().data).toMatchObject({ id: vibe.id, status: 'LIVE', confirmedGets: 0, productVibesCount: 1, product: { id: product.id, images: [], specs: [] } })
+    expect((await api('GET', '/admin/vibes/00000000-0000-4000-8000-000000000000', admin.accessToken)).statusCode).toBe(404)
+    const locked = await api('PATCH', `/admin/vibes/${vibe.id}`, admin.accessToken, { minGetCents: 500 })
+    expect(locked.json().error.code).toBe('VIBE_LOCKED')
+    const ok = await api('PATCH', `/admin/vibes/${vibe.id}`, admin.accessToken, { goalGets: 99 })
+    expect(ok.json().data.goalGets).toBe(99)
+  })
+})
+
 describe('favoritas', () => {
   it('/me/favorites/vibes lista as Vibes favoritadas no formato da vitrine', async () => {
     const u = await userWithToken(t)

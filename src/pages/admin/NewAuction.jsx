@@ -8,7 +8,7 @@ import { Field, FormAlert, Submit } from '../../components/form.jsx'
 import { PageHead } from '../dashboard/ui.jsx'
 import { ReadOnlyNote, useIsAdmin } from './ui.jsx'
 
-const DAY = 24 * 3600 * 1000
+export const DAY = 24 * 3600 * 1000
 const MAX_PHOTOS = 10
 const MAX_BYTES = 5_000_000
 const STATUSES = [
@@ -17,21 +17,21 @@ const STATUSES = [
   ['DRAFT', 'Rascunho', 'Fica escondida do site até você publicar.'],
 ]
 
-const slugify = (s) =>
+export const slugify = (s) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120)
 const pad = (n) => String(n).padStart(2, '0')
-const toLocal = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-const parseBrl = (v) => {
+export const toLocal = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+export const parseBrl = (v) => {
   const d = String(v).replace(/\D/g, '')
   return d ? parseInt(d, 10) : 0
 }
-const maskBrl = (v) => {
+export const maskBrl = (v) => {
   const c = parseBrl(v)
   return c ? (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''
 }
-const intOnly = (v) => v.replace(/\D/g, '').slice(0, 7)
+export const intOnly = (v) => v.replace(/\D/g, '').slice(0, 7)
 
-function Photos({ photos, setPhotos }) {
+export function Photos({ photos, setPhotos }) {
   const input = useRef(null)
   const [busy, setBusy] = useState(0)
   const [error, setError] = useState(null)
@@ -90,7 +90,7 @@ function Photos({ photos, setPhotos }) {
   )
 }
 
-function Specs({ specs, setSpecs }) {
+export function Specs({ specs, setSpecs }) {
   const set = (i, k) => (e) => setSpecs((s) => s.map((row, j) => (j === i ? { ...row, [k]: e.target.value } : row)))
   return (
     <div className="na-specs">
@@ -108,7 +108,7 @@ function Specs({ specs, setSpecs }) {
   )
 }
 
-function Benefits({ items, setItems }) {
+export function Benefits({ items, setItems }) {
   const [text, setText] = useState('')
   const add = () => {
     const t = text.trim()

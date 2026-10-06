@@ -147,6 +147,25 @@ describe('painel admin', () => {
   })
 })
 
+describe('detalhe do usuário no admin', () => {
+  it('/admin/users/:id traz os dois saldos (GetCoin e R$)', async () => {
+    const u = await userWithToken(t)
+    await t.db.transaction((tx) => applyCashMovement(tx, { userId: u.id, amountCents: 1234, type: 'ADJUSTMENT', reason: 'teste' }))
+    const r = await api('GET', `/admin/users/${u.id}`, support.accessToken)
+    expect(r.statusCode).toBe(200)
+    expect(r.json().data).toMatchObject({ id: u.id, cashBalanceCents: 1234, balanceCents: 0, getsCount: 0, wins: 0 })
+  })
+
+  it('/admin/audit-logs traz o nome de quem agiu', async () => {
+    const u = await userWithToken(t)
+    const adj = await api('POST', `/admin/users/${u.id}/cash-adjustments`, admin.accessToken, { amountCents: 500, reason: 'compensação de teste' })
+    expect(adj.statusCode, adj.body).toBe(201)
+    const actor = (await api('GET', `/admin/users/${admin.id}`, admin.accessToken)).json().data
+    const logs = (await api('GET', `/admin/audit-logs?entityId=${u.id}`, support.accessToken)).json().data
+    expect(logs[0]).toMatchObject({ action: 'CASH_ADJUSTED', actorId: admin.id, actorName: actor.name, metadata: { amountCents: 500 } })
+  })
+})
+
 describe('favoritas', () => {
   it('/me/favorites/vibes lista as Vibes favoritadas no formato da vitrine', async () => {
     const u = await userWithToken(t)

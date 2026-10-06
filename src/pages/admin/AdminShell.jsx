@@ -1,6 +1,6 @@
 import { motion, MotionConfig } from 'framer-motion'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { ArrowSquareOut, ChartLineUp, Gavel, Money, Package, PlusCircle, ShieldCheck } from '@phosphor-icons/react'
+import { ArrowSquareOut, ChartLineUp, Gavel, Money, Package, PlusCircle, ShieldCheck, Users } from '@phosphor-icons/react'
 import UserChip from '../../components/UserChip.jsx'
 import { useApi } from '../../lib/useApi.js'
 import { useAuth } from '../../lib/auth.jsx'
@@ -12,6 +12,7 @@ const GROUPS = [
     { to: '/admin', end: true, label: 'Visão geral', Icon: ChartLineUp },
     { to: '/admin/saques', label: 'Saques', Icon: Money, badge: (p) => p?.withdrawals.count },
     { to: '/admin/entregas', label: 'Entregas', Icon: Package, badge: (p) => p?.prizesToShip },
+    { to: '/admin/usuarios', label: 'Usuários', Icon: Users },
   ]],
   ['Catálogo', [
     { to: '/admin/vibes', label: 'Vibes', Icon: Gavel, match: (path) => path.startsWith('/admin/vibes') && path !== '/admin/vibes/nova' },

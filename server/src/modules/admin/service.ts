@@ -16,7 +16,7 @@ import { marketFeeRevenue } from '../market/service.js'
 import { cancelSellerListings } from '../market/core.js'
 import { vibeStats } from '../vibes/service.js'
 import { applyWalletMovement, getBalance } from '../wallet/service.js'
-import { applyCashMovement } from '../cash/service.js'
+import { applyCashMovement, getCashBalance } from '../cash/service.js'
 import type {
   createAuctionSchema,
   createProductSchema,
@@ -136,8 +136,9 @@ export async function getUser(ctx: AppContext, id: string) {
   const { db } = ctx
   const [u] = await db.select().from(users).where(eq(users.id, id))
   if (!u) throw notFound('Usuário não encontrado.')
-  const [balanceCents, [getsCount], [wins]] = await Promise.all([
+  const [balanceCents, cashBalanceCents, [getsCount], [wins]] = await Promise.all([
     getBalance(db, id),
+    getCashBalance(db, id),
     db.select({ n: count() }).from(gets).where(eq(gets.userId, id)),
     db
       .select({ n: count() })
@@ -145,7 +146,7 @@ export async function getUser(ctx: AppContext, id: string) {
       .innerJoin(gets, eq(gets.id, vibes.winnerGetId))
       .where(eq(gets.userId, id)),
   ])
-  return { ...toAdminUser(u), balanceCents, getsCount: getsCount?.n ?? 0, wins: wins?.n ?? 0 }
+  return { ...toAdminUser(u), balanceCents, cashBalanceCents, getsCount: getsCount?.n ?? 0, wins: wins?.n ?? 0 }
 }
 
 /** Regras: ninguém muda a própria role/status; último ADMIN ativo não pode ser rebaixado/suspenso. */
@@ -597,14 +598,16 @@ export async function listAuditLogs(ctx: AppContext, q: In<typeof listAuditQuery
   const where = conds.length ? and(...conds) : undefined
   const [rows, [{ total } = { total: 0 }]] = await Promise.all([
     ctx.db
-      .select()
+      .select({ log: auditLogs, actorName: users.name })
       .from(auditLogs)
+      .leftJoin(users, eq(users.id, auditLogs.actorId))
       .where(where)
       .orderBy(desc(auditLogs.createdAt), desc(auditLogs.id))
       .limit(q.pageSize)
       .offset(offsetOf(q)),
     ctx.db.select({ total: count() }).from(auditLogs).where(where),
   ])
-  return paginated(rows, total, q)
+  // Nome de quem agiu, para o histórico do painel não mostrar só o id.
+  return paginated(rows.map((r) => ({ ...r.log, actorName: r.actorName })), total, q)
 }
 

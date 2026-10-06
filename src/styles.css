@@ -1543,11 +1543,12 @@ a.ad-legend-row:hover { color: var(--ink); }
 }
 
 /* Configurações (src/pages/admin/Settings.jsx) */
-.st-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.st-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 .st-slot { display: grid; gap: 8px; min-width: 0; }
 .st-saved { margin: 0 6px; }
 .st-group .dh-section-title { display: flex; align-items: center; gap: 10px; }
-.st-fields { display: grid; gap: 14px; }
+.st-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px 20px; align-items: start; }
+.st-fields .toggle { grid-column: 1 / -1; }
 .st-unit { font-size: 0.76rem; font-weight: 600; color: var(--muted); }
 .st-toggle { position: relative; align-items: flex-start; }
 .st-toggle b { display: block; font-size: 0.92rem; color: var(--ink); }
@@ -1557,9 +1558,6 @@ a.ad-legend-row:hover { color: var(--ink); }
 .st-diff { list-style: none; margin: 0; padding: 12px 14px; display: grid; gap: 6px; border-radius: var(--r-sm); background: rgba(255, 226, 200, 0.05); border: 1px solid var(--line); }
 .st-diff li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 0.86rem; color: var(--ink-2); }
 .st-diff .mono { color: var(--coin); }
-@media (max-width: 1100px) {
-  .st-grid { grid-template-columns: minmax(0, 1fr); }
-}
 
 /* Novo leilão (src/pages/admin/NewAuction.jsx) */
 .na { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }

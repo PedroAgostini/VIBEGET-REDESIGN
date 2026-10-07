@@ -1,6 +1,6 @@
 import { motion, MotionConfig } from 'framer-motion'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { ArrowSquareOut, ChartLineUp, Coins, Gavel, GearSix, Money, Package, PlusCircle, ShieldCheck, Storefront, Ticket, Users } from '@phosphor-icons/react'
+import { ArrowSquareOut, ChartLineUp, ClockCounterClockwise, Coins, Gavel, GearSix, Money, Package, PlusCircle, ShieldCheck, Storefront, Ticket, Users } from '@phosphor-icons/react'
 import UserChip from '../../components/UserChip.jsx'
 import { useApi } from '../../lib/useApi.js'
 import { useAuth } from '../../lib/auth.jsx'
@@ -23,6 +23,7 @@ const GROUPS = [
   ]],
   ['Sistema', [
     { to: '/admin/configuracoes', label: 'Configurações', Icon: GearSix, adminOnly: true },
+    { to: '/admin/auditoria', label: 'Auditoria', Icon: ClockCounterClockwise },
   ]],
 ]
 

@@ -8,6 +8,7 @@ import { Field } from '../../components/form.jsx'
 import { Coin, LoadError, Skeleton, dateFmt, dayFmt } from '../dashboard/ui.jsx'
 import { ReadOnlyNote, useIsAdmin } from './ui.jsx'
 import { LEVEL, ROLE, STATUS, initials } from './Users.jsx'
+import { actionLabel } from './auditLabels.js'
 
 const parseCents = (v) => {
   const d = String(v).replace(/\D/g, '')
@@ -203,27 +204,8 @@ function AdjustForm({ user, onDone }) {
   )
 }
 
-const ACTIONS = {
-  USER_UPDATED: 'Acesso alterado',
-  WALLET_ADJUSTED: 'Ajuste de GetCoin',
-  CASH_ADJUSTED: 'Ajuste de saldo em R$',
-  MARKET_LISTINGS_CANCELLED_ON_SUSPEND: 'Anúncios cancelados pela suspensão',
-  USER_REGISTERED: 'Conta criada',
-  EMAIL_VERIFIED: 'E-mail confirmado',
-  LOGIN_SUCCEEDED: 'Entrou na conta',
-  LOGIN_FAILED: 'Tentativa de login com senha errada',
-  LOGIN_BLOCKED: 'Login bloqueado por excesso de tentativas',
-  LOGOUT_ALL: 'Saiu de todos os aparelhos',
-  REFRESH_TOKEN_REUSE: 'Sessão reutilizada (possível vazamento): sessões encerradas',
-  PASSWORD_CHANGED: 'Senha alterada',
-  PASSWORD_RESET_REQUESTED: 'Pediu redefinição de senha',
-  PASSWORD_RESET: 'Senha redefinida',
-  PROFILE_UPDATED: 'Perfil atualizado',
-  ADDRESS_UPDATED: 'Endereço atualizado',
-  ACCOUNT_DELETED: 'Conta excluída (LGPD)',
-}
-
-function describe(log) {
+/** Resumo legível de alguns registros: [o que mudou, motivo]. Também usado na tela de auditoria. */
+export function describe(log) {
   const m = log.metadata ?? {}
   if (log.action === 'USER_UPDATED' && m.from && m.to) {
     const bits = []
@@ -256,7 +238,7 @@ function History({ userId }) {
                     <li key={l.id}>
                       <ClockCounterClockwise size={16} aria-hidden="true" />
                       <div>
-                        <p className="ad-log-title">{ACTIONS[l.action] ?? l.action}{what && <> · <span className="mono">{what}</span></>}</p>
+                        <p className="ad-log-title">{actionLabel(l.action)}{what && <> · <span className="mono">{what}</span></>}</p>
                         {why && <p className="ad-log-why">“{why}”</p>}
                         <p className="ad-who-meta"><span className="mono">{dateFmt.format(new Date(l.createdAt))}</span>{l.actorName ? ` · por ${l.actorName}` : ''}</p>
                       </div>

@@ -762,6 +762,11 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - **Backend:** `GET /admin/market/orders` passou a trazer `buyerName`, `buyerEmail`, `sellerName`, `sellerEmail`. Teste novo em `d11-d12-sanity.test.ts`; suíte **525/525**.
     - Testado: lista, pedidos do anúncio da Marina (Test User comprou 25 GetCoins por R$ 20,50 via Pix), passo de confirmação do cancelamento (não confirmado, para manter os anúncios de demonstração) e celular.
     - **Servidores:** os processos de dev de 2026-10-06 ainda estavam no ar ao abrir a sessão; a API antiga foi parada com Ctrl+C e reiniciada.
+  - **2026-10-07 — Auditoria em `/admin/auditoria`** (grupo Sistema; SUPPORT e ADMIN leem):
+    - filtros na URL: área (`?area=`, = `entity`), ação (`?acao=`, lista só as da área), período (`?de=`/`?ate=`, dias inteiros no fuso local) e pessoa (`?pessoa=&nome=`, clicando no nome de quem agiu);
+    - registros agrupados por dia, com hora, ação em português, resumo (mudança de acesso, ajustes), motivo, quem fez ("Sistema" quando não há autor), área, link "Abrir" para conta ou Vibe e "Detalhes" com o metadata e o IP;
+    - rótulos de todas as ações e áreas gravadas pela API em `src/pages/admin/auditLabels.js`, usado também pelo histórico da ficha do usuário (`describe` exportado de `UserDetail.jsx`).
+    - Sem mudança no backend (a rota e o `actorName` já existiam). Testado: 117 registros, filtro Saques (2), filtro por pessoa (29 do Test User), detalhes e celular.
   - **Testado no navegador:** busca, filtros, crédito de R$ 5,00 no Rafael (`rafael.mk@`, saldo R$ 0 → R$ 5,00, histórico atualizado), passo de confirmação da suspensão (não confirmado, para manter os anúncios dele) e celular sem rolagem lateral.
 
 ## 11. Próximos passos
@@ -793,7 +798,7 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 6. ~~Cliente precisa definir bônus~~ (D3: o ADMIN define em `/admin/settings`). Ainda pendente do cliente: preços reais dos 4 produtos estimados e se `goal_gets` encerra a Vibe.
 7. ~~Telas `/login` e `/cadastro`~~ (feito em 2026-09-25, ver seção 13). Próximo no front:
    - 7.1 ~~Dashboard completo~~ (feito; em 2026-09-29 entraram o resgate de cupom, a exportação, a exclusão de conta, sair de todos os dispositivos e os limites de saque).
-   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). ~~Cadastro de leilão com upload (D5)~~ (feito em 2026-09-29). ~~Usuários (papel, suspensão, ajustes de GetCoin e R$)~~ e ~~configurações (D3, saques, GetCoin, marketplace)~~ e ~~cupons (D4)~~ e ~~pacotes de GetCoin~~ e ~~edição de produto/Vibe já criados~~ (feitos em 2026-10-06) e ~~supervisão do marketplace~~ (2026-10-07). **Falta:** tela geral de auditoria (audit log com filtros).
+   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). ~~Cadastro de leilão com upload (D5)~~ (feito em 2026-09-29). ~~Usuários (papel, suspensão, ajustes de GetCoin e R$)~~ e ~~configurações (D3, saques, GetCoin, marketplace)~~ e ~~cupons (D4)~~ e ~~pacotes de GetCoin~~ e ~~edição de produto/Vibe já criados~~ (feitos em 2026-10-06) e ~~supervisão do marketplace~~ (2026-10-07). ~~Auditoria geral~~ (2026-10-07). **Painel admin completo**; os próximos passos são os itens de QA, cliente e produção desta lista.
    - 7.2.1 Cliente: confirmar a regra D13 (bloquear exclusão de conta com prêmio a receber; endereço editável até o envio) e se haverá prazo para o vencedor confirmar o endereço.
    - 7.3 Tela de Vibe (`/produto/:slug`) com o botão de Get, usando `getsCloseAt` e tratando `409 VIBE_CLOSING`.
    - 7.4 ~~Refresh entre abas~~ (feito em 2026-09-29 com Web Locks e BroadcastChannel).

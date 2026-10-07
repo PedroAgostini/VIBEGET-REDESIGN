@@ -1629,6 +1629,44 @@ a.ad-legend-row:hover { color: var(--ink); }
   .mm-order-people { flex-direction: column; align-items: flex-start; }
 }
 
+/* Auditoria (src/pages/admin/Audit.jsx) */
+.au-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(150px, 1fr) minmax(150px, 1fr); gap: 12px; align-items: end; padding: 16px 18px; border-radius: var(--r-lg); }
+.au-filters .au-clear { grid-column: 1 / -1; justify-self: start; height: 38px; }
+.au-field { display: grid; gap: 6px; min-width: 0; font-size: 0.8rem; font-weight: 600; color: var(--ink-2); }
+.au-field .vp-sort select { width: 100%; height: 44px; }
+.au-field .af-input { width: 100%; min-width: 0; height: 44px; padding: 0 14px; }
+.au-list { list-style: none; margin: 0; padding: 8px 18px; border-radius: var(--r-lg); }
+.au-day { margin: 14px 0 4px; font-size: 0.78rem; font-weight: 600; color: var(--coin); }
+.au-day::first-letter { text-transform: uppercase; }
+.au-row-wrap:first-child .au-day { margin-top: 6px; }
+.au-row { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+.au-day + .au-row { border-top: 0; }
+.au-time { padding-top: 2px; font-size: 0.82rem; color: var(--muted); }
+.au-main { display: grid; gap: 2px; min-width: 0; }
+.au-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 4px; }
+.au-actor { padding: 0; border: 0; background: none; color: var(--ink-2); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.au-actor:hover { color: var(--coin); }
+.au-system { display: inline-flex; align-items: center; gap: 4px; }
+.au-area { padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line-2); font-size: 0.72rem; }
+.au-open { display: inline-flex; align-items: center; gap: 3px; color: var(--coin); font-weight: 600; }
+.au-open:hover { color: var(--ink); }
+.au-details { margin-top: 6px; font-size: 0.8rem; }
+.au-details summary { width: max-content; color: var(--muted); cursor: pointer; }
+.au-details summary:hover { color: var(--ink-2); }
+.au-details dl { display: grid; gap: 4px; margin: 8px 0 0; padding: 10px 12px; border-radius: var(--r-sm); background: rgba(255, 226, 200, 0.04); border: 1px solid var(--line); }
+.au-details dl div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px; }
+.au-details dt { color: var(--muted); overflow-wrap: anywhere; }
+.au-details dd { margin: 0; color: var(--ink-2); font-size: 0.76rem; overflow-wrap: anywhere; }
+@media (max-width: 1100px) {
+  .au-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .au-filters { grid-template-columns: minmax(0, 1fr); }
+  .au-list { padding: 4px 14px; }
+  .au-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .au-details dl div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+
 /* Editar leilão (src/pages/admin/EditAuction.jsx) */
 .ea-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: -6px; }
 .ea-head .dg-pill { margin: 0; }

@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, gt, gte, inArray, sql, sum, type SQL } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/pg-core'
 import type { AppContext, AuthInfo, RequestMeta } from '../../context.js'
 import type { DbOrTx } from '../../db/client.js'
 import { marketListings, marketOrders, payments, users, type MarketListing, type MarketOrder } from '../../db/schema.js'
@@ -483,11 +484,23 @@ export async function adminListOrders(
   if (q.listingId) conds.push(eq(marketOrders.listingId, q.listingId))
   if (q.userId) conds.push(sql`(${marketOrders.buyerId} = ${q.userId} OR ${marketOrders.sellerId} = ${q.userId})`)
   const where = conds.length ? and(...conds) : undefined
+  // Painel: quem comprou de quem (nome e e-mail dos dois lados).
+  const buyer = alias(users, 'buyer')
+  const seller = alias(users, 'seller')
   const [rows, [{ total } = { total: 0 }], [fees]] = await Promise.all([
     ctx.db
-      .select({ o: marketOrders, pay: { id: payments.id, status: payments.status, method: payments.method, paidAt: payments.paidAt } })
+      .select({
+        o: marketOrders,
+        pay: { id: payments.id, status: payments.status, method: payments.method, paidAt: payments.paidAt },
+        buyerName: buyer.name,
+        buyerEmail: buyer.email,
+        sellerName: seller.name,
+        sellerEmail: seller.email,
+      })
       .from(marketOrders)
       .leftJoin(payments, eq(payments.orderId, marketOrders.id))
+      .innerJoin(buyer, eq(buyer.id, marketOrders.buyerId))
+      .innerJoin(seller, eq(seller.id, marketOrders.sellerId))
       .where(where)
       .orderBy(desc(marketOrders.createdAt), desc(marketOrders.id))
       .limit(q.pageSize)
@@ -497,7 +510,15 @@ export async function adminListOrders(
   ])
   return {
     ...paginated(
-      rows.map((r) => ({ ...r.o, idempotencyKey: undefined, payment: r.pay })),
+      rows.map((r) => ({
+        ...r.o,
+        idempotencyKey: undefined,
+        payment: r.pay,
+        buyerName: r.buyerName,
+        buyerEmail: r.buyerEmail,
+        sellerName: r.sellerName,
+        sellerEmail: r.sellerEmail,
+      })),
       total,
       q,
     ),

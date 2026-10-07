@@ -754,6 +754,14 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
     - avisa quando o produto está em mais de uma Vibe; endereço repetido vira erro no campo.
     - **Backend:** `GET /admin/vibes/:id` (Vibe + produto completo + `confirmedGets`, `topGet`, `productVibesCount`; SUPPORT lê). Teste novo em `d13-prizes.test.ts`; suíte **524/524**.
     - Testado: rascunho `teste-edicao-painel` criado pela API, editado (5 campos de produto e disputa juntos), endereço repetido recusado, travas conferidas numa Vibe ao vivo; o rascunho de teste foi **cancelado** no fim.
+  - **2026-10-07 — Marketplace em `/admin/marketplace`** (grupo Operação; SUPPORT lê, ADMIN cancela):
+    - números do topo: anúncios à venda, pedidos pagos, aguardando pagamento e taxas recebidas (GetCoins);
+    - aba **Anúncios**: vendedor (link para o usuário), preço por GetCoin, anunciado, vendido (em GetCoins e R$), barra vendido/em pedidos abertos/disponível; filtro À venda/Esgotados/Cancelados/Todos;
+    - "Cancelar anúncio" com confirmação que explica a devolução (`POST /admin/market/listings/:id/cancel`); "Ver pedidos" abre a aba Pedidos filtrada pelo anúncio (`?aba=pedidos&anuncio=`);
+    - aba **Pedidos**: comprador → vendedor, GetCoins, valor e forma de pagamento, taxa e situação; filtros por situação.
+    - **Backend:** `GET /admin/market/orders` passou a trazer `buyerName`, `buyerEmail`, `sellerName`, `sellerEmail`. Teste novo em `d11-d12-sanity.test.ts`; suíte **525/525**.
+    - Testado: lista, pedidos do anúncio da Marina (Test User comprou 25 GetCoins por R$ 20,50 via Pix), passo de confirmação do cancelamento (não confirmado, para manter os anúncios de demonstração) e celular.
+    - **Servidores:** os processos de dev de 2026-10-06 ainda estavam no ar ao abrir a sessão; a API antiga foi parada com Ctrl+C e reiniciada.
   - **Testado no navegador:** busca, filtros, crédito de R$ 5,00 no Rafael (`rafael.mk@`, saldo R$ 0 → R$ 5,00, histórico atualizado), passo de confirmação da suspensão (não confirmado, para manter os anúncios dele) e celular sem rolagem lateral.
 
 ## 11. Próximos passos
@@ -785,7 +793,7 @@ _Critério: CRÍTICO = explorável agora ou quebra dinheiro/autorização; ALTO 
 6. ~~Cliente precisa definir bônus~~ (D3: o ADMIN define em `/admin/settings`). Ainda pendente do cliente: preços reais dos 4 produtos estimados e se `goal_gets` encerra a Vibe.
 7. ~~Telas `/login` e `/cadastro`~~ (feito em 2026-09-25, ver seção 13). Próximo no front:
    - 7.1 ~~Dashboard completo~~ (feito; em 2026-09-29 entraram o resgate de cupom, a exportação, a exclusão de conta, sair de todos os dispositivos e os limites de saque).
-   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). ~~Cadastro de leilão com upload (D5)~~ (feito em 2026-09-29). ~~Usuários (papel, suspensão, ajustes de GetCoin e R$)~~ e ~~configurações (D3, saques, GetCoin, marketplace)~~ e ~~cupons (D4)~~ e ~~pacotes de GetCoin~~ e ~~edição de produto/Vibe já criados~~ (feitos em 2026-10-06). **Falta:** supervisão do marketplace e audit log.
+   - 7.2 Painel `/admin`: ~~fase 1, operação (visão geral, saques, entregas, Vibes)~~ (feito em 2026-09-29). ~~Cadastro de leilão com upload (D5)~~ (feito em 2026-09-29). ~~Usuários (papel, suspensão, ajustes de GetCoin e R$)~~ e ~~configurações (D3, saques, GetCoin, marketplace)~~ e ~~cupons (D4)~~ e ~~pacotes de GetCoin~~ e ~~edição de produto/Vibe já criados~~ (feitos em 2026-10-06) e ~~supervisão do marketplace~~ (2026-10-07). **Falta:** tela geral de auditoria (audit log com filtros).
    - 7.2.1 Cliente: confirmar a regra D13 (bloquear exclusão de conta com prêmio a receber; endereço editável até o envio) e se haverá prazo para o vencedor confirmar o endereço.
    - 7.3 Tela de Vibe (`/produto/:slug`) com o botão de Get, usando `getsCloseAt` e tratando `409 VIBE_CLOSING`.
    - 7.4 ~~Refresh entre abas~~ (feito em 2026-09-29 com Web Locks e BroadcastChannel).

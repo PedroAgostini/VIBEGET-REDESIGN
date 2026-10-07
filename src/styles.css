@@ -1605,6 +1605,30 @@ a.ad-legend-row:hover { color: var(--ink); }
 .pk-toggle { position: relative; align-items: flex-start; }
 .pk-toggle b { display: block; font-size: 0.92rem; color: var(--ink); }
 
+/* Marketplace (src/pages/admin/AdminMarket.jsx) */
+.mm-tabs .ad-filter-btn svg { flex: none; }
+.mm-person { display: flex; align-items: center; gap: 12px; min-width: 0; color: inherit; border-radius: var(--r-sm); transition: color 0.3s var(--ease); }
+.mm-person:hover .ad-who-name { color: var(--coin); }
+.mm-avatar { width: 38px; height: 38px; font-size: 0.74rem; }
+.mm-person-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); }
+.mm-card.is-paused, .mm-order:has(.dg-pill-off) { opacity: 0.78; }
+.mm-progress { display: grid; gap: 8px; }
+.mm-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.8rem; color: var(--muted); }
+.mm-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.mm-legend b { font-weight: 500; color: var(--ink-2); }
+.mm-legend .ad-dot { width: 8px; height: 8px; }
+.mm-scope { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; border-radius: var(--r-sm); border: 1px dashed var(--line-2); font-size: 0.86rem; color: var(--ink-2); }
+.mm-scope-clear { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: var(--coin); font: inherit; font-weight: 600; cursor: pointer; }
+.mm-scope-clear:hover { color: var(--ink); }
+.mm-order-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.mm-order-head .dg-pill { margin: 0; }
+.mm-order-people { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; min-width: 0; }
+.mm-order-arrow { flex: none; color: var(--muted); }
+@media (max-width: 600px) {
+  .mm-order-arrow { transform: rotate(90deg); }
+  .mm-order-people { flex-direction: column; align-items: flex-start; }
+}
+
 /* Editar leilão (src/pages/admin/EditAuction.jsx) */
 .ea-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: -6px; }
 .ea-head .dg-pill { margin: 0; }

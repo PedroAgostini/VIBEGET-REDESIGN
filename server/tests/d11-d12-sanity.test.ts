@@ -166,6 +166,19 @@ describe('D12 — marketplace', () => {
     expect(w!.balanceCents).toBe(0)
   })
 
+  it('pedidos no admin trazem nome e e-mail de comprador e vendedor', async () => {
+    const seller = await userWithToken(t)
+    const buyer = await userWithToken(t)
+    await giveGetcoin(seller.id, 2000)
+    const lid = (await api('POST', '/me/market/listings', seller.accessToken, { getcoinsCents: 2000, unitPriceCents: 100 })).json().data.id
+    expect((await order(buyer.accessToken, lid, 1000)).statusCode).toBe(201)
+    const rows = (await api('GET', `/admin/market/orders?listingId=${lid}`, admin.accessToken)).json().data
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ buyerId: buyer.id, sellerId: seller.id, buyerEmail: buyer.email, sellerEmail: seller.email })
+    expect(rows[0].buyerName).toBeTruthy()
+    expect(rows[0].sellerName).toBeTruthy()
+  })
+
   it('limites de anúncio e admin cancela com audit', async () => {
     const seller = await userWithToken(t)
     await giveGetcoin(seller.id, 5000)

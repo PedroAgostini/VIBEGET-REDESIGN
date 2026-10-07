@@ -30,6 +30,7 @@ import Settings from './pages/admin/Settings.jsx'
 import Coupons from './pages/admin/Coupons.jsx'
 import Packages from './pages/admin/Packages.jsx'
 import EditAuction from './pages/admin/EditAuction.jsx'
+import AdminMarket from './pages/admin/AdminMarket.jsx'
 import { AuthProvider, RequireAuth, RequireStaff } from './lib/auth.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -62,6 +63,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="configuracoes" element={<Settings />} />
             <Route path="cupons" element={<Coupons />} />
             <Route path="pacotes" element={<Packages />} />
+            <Route path="marketplace" element={<AdminMarket />} />
             <Route path="vibes" element={<AdminVibes />} />
             <Route path="vibes/nova" element={<NewAuction />} />
             <Route path="vibes/:id/editar" element={<EditAuction />} />

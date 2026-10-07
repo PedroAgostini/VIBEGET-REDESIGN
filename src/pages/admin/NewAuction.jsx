@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowSquareOut, CircleNotch, ImageSquare, Plus, Star, Trash,
 import { api, fieldErrors, upload } from '../../lib/api.js'
 import { useApi } from '../../lib/useApi.js'
 import VibeCard, { CAT_LABEL } from '../../components/VibeCard.jsx'
-import { Field, FormAlert, Submit } from '../../components/form.jsx'
+import { ErrorLine, Field, FormAlert, Submit } from '../../components/form.jsx'
 import { PageHead } from '../dashboard/ui.jsx'
 import { ReadOnlyNote, useIsAdmin } from './ui.jsx'
 
@@ -104,6 +104,36 @@ export function Specs({ specs, setSpecs }) {
       {specs.length < 40 && (
         <button type="button" className="btn btn-sm btn-glass na-add" onClick={() => setSpecs((s) => [...s, { label: '', value: '' }])}><Plus size={16} aria-hidden="true" />Adicionar linha</button>
       )}
+    </div>
+  )
+}
+
+/** Atalhos de duração, numa linha própria abaixo de Início/Fim (não desalinha as colunas). */
+export function Duration({ onPick, disabled }) {
+  return (
+    <div className="na-duration">
+      <span className="na-duration-label">Duração</span>
+      <div className="vd-quick" role="group" aria-label="Duração rápida">
+        {[3, 7, 15].map((d) => <button key={d} type="button" className="vd-quick-btn" onClick={() => onPick(d)} disabled={disabled}>{d} dias</button>)}
+      </div>
+      <span className="af-hint">Máximo de 15 dias.</span>
+    </div>
+  )
+}
+
+/** Endereço da página com o prefixo /vibes/ dentro do campo. */
+export function SlugField({ value, onChange, error, disabled }) {
+  return (
+    <div className="af-field">
+      <div className="af-label-row"><label htmlFor="na-slug">Endereço da página</label></div>
+      <div className="na-slug">
+        <span className="na-slug-prefix" aria-hidden="true">/vibes/</span>
+        <input
+          id="na-slug" className="af-input" value={value} placeholder="nome-do-produto" disabled={disabled}
+          onChange={(e) => onChange(e.target.value)} aria-invalid={error ? 'true' : undefined} autoComplete="off" spellCheck="false"
+        />
+      </div>
+      {error ? <ErrorLine>{error}</ErrorLine> : <p className="af-hint">Gerado a partir do nome do produto.</p>}
     </div>
   )
 }
@@ -307,26 +337,21 @@ export default function NewAuction() {
                 ))}
               </div>
             </fieldset>
-            <div className="dc-grid">
+            <div className="na-dates">
               {status !== 'LIVE' ? (
                 <Field label="Início" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} error={errors['vibe.startsAt']} />
               ) : (
                 <Field label="Início" value="Agora, ao salvar" readOnly />
               )}
-              <div className="na-end">
-                <Field label="Fim" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} error={errors['vibe.endsAt']} hint="No máximo 15 dias depois do início." />
-                <div className="vd-quick" role="group" aria-label="Duração rápida">
-                  {[3, 7, 15].map((d) => <button key={d} type="button" className="vd-quick-btn" onClick={() => setDuration(d)}>{d} dias</button>)}
-                </div>
-              </div>
-              <Field label="Get mínimo (R$)" inputMode="numeric" value={minGet} onChange={(e) => setMinGet(maskBrl(e.target.value))} error={errors['vibe.minGetCents']} />
-              <Field label="Meta de Gets (opcional)" inputMode="numeric" placeholder="Ex.: 480" value={goal} onChange={(e) => setGoal(intOnly(e.target.value))} hint="Só informativa: não encerra a Vibe." />
-              <Field label="Cashback para quem não vence (%)" inputMode="numeric" placeholder={String(defaultCashback)} value={cashback} onChange={(e) => setCashback(e.target.value.replace(/\D/g, '').slice(0, 3))} hint={`Vazio usa o padrão das configurações (${defaultCashback}%).`} />
-              <Field
-                label="Endereço da página" value={finalSlug} onChange={(e) => { setSlugTouched(true); setSlug(slugify(e.target.value)) }}
-                error={errors['vibe.slug'] || errors['product.slug']} hint={`/vibes/${finalSlug || '…'}`}
-              />
+              <Field label="Fim" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} error={errors['vibe.endsAt']} />
+              <Duration onPick={setDuration} />
             </div>
+            <div className="na-values">
+              <Field label="Get mínimo (R$)" inputMode="numeric" value={minGet} onChange={(e) => setMinGet(maskBrl(e.target.value))} error={errors['vibe.minGetCents']} />
+              <Field label="Cashback (%)" inputMode="numeric" placeholder={String(defaultCashback)} value={cashback} onChange={(e) => setCashback(e.target.value.replace(/\D/g, '').slice(0, 3))} hint={`Para quem não vence. Vazio: ${defaultCashback}%.`} />
+              <Field label="Meta de Gets" inputMode="numeric" placeholder="Opcional" value={goal} onChange={(e) => setGoal(intOnly(e.target.value))} hint="Só informativa." />
+            </div>
+            <SlugField value={finalSlug} onChange={(v) => { setSlugTouched(true); setSlug(slugify(v)) }} error={errors['vibe.slug'] || errors['product.slug']} />
             <div className="af-field">
               <div className="af-label-row"><span className="na-label">Benefícios extras</span></div>
               <Benefits items={benefits} setItems={setBenefits} />

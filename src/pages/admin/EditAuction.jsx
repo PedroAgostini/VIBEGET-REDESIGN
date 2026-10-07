@@ -7,7 +7,7 @@ import VibeCard, { CAT_LABEL } from '../../components/VibeCard.jsx'
 import { Field, FormAlert, Submit } from '../../components/form.jsx'
 import { LoadError, PageHead, Skeleton } from '../dashboard/ui.jsx'
 import { ReadOnlyNote, useIsAdmin } from './ui.jsx'
-import { Benefits, DAY, Photos, Specs, intOnly, maskBrl, parseBrl, slugify, toLocal } from './NewAuction.jsx'
+import { Benefits, DAY, Duration, Photos, SlugField, Specs, intOnly, maskBrl, parseBrl, slugify, toLocal } from './NewAuction.jsx'
 
 const STATUS = { DRAFT: ['Rascunho', 'off'], SCHEDULED: ['Agendada', 'wait'], LIVE: ['Ao vivo', 'lead'], ENDED: ['Encerrada', 'off'], CANCELLED: ['Cancelada', 'off'] }
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
@@ -159,23 +159,17 @@ function EditForm({ data, onSaved }) {
         <section className="dc-section glass" aria-labelledby="ea-vibe">
           <h2 id="ea-vibe" className="dh-section-title">Disputa</h2>
           {locks.note && <p className="ea-note"><Info size={16} aria-hidden="true" />{locks.note}</p>}
-          <div className="dc-grid">
+          <div className="na-dates">
             <Field label="Início" type="datetime-local" value={v.startsAt} onChange={(e) => set('startsAt')(e.target.value)} error={errors['vibe.startsAt']} disabled={locks.vibe} />
-            <div className="na-end">
-              <Field label="Fim" type="datetime-local" value={v.endsAt} onChange={(e) => set('endsAt')(e.target.value)} error={errors['vibe.endsAt']} disabled={locks.finished} hint="No máximo 15 dias depois do início." />
-              {!locks.finished && (
-                <div className="vd-quick" role="group" aria-label="Duração rápida">
-                  {[3, 7, 15].map((d) => (
-                    <button key={d} type="button" className="vd-quick-btn" onClick={() => set('endsAt')(toLocal(new Date(start.getTime() + d * DAY)))}>{d} dias</button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Field label="Get mínimo (R$)" inputMode="numeric" value={v.minGet} onChange={(e) => set('minGet')(maskBrl(e.target.value))} error={errors['vibe.minGetCents']} disabled={locks.vibe} />
-            <Field label="Meta de Gets (opcional)" inputMode="numeric" value={v.goal} onChange={(e) => set('goal')(intOnly(e.target.value))} error={errors['vibe.goalGets']} disabled={locks.finished} hint="Só informativa: não encerra a Vibe." />
-            <Field label="Cashback para quem não vence (%)" inputMode="numeric" value={v.cashback} onChange={(e) => set('cashback')(e.target.value.replace(/\D/g, '').slice(0, 3))} error={errors['vibe.cashbackPercent']} disabled={locks.vibe} />
-            <Field label="Endereço da página" value={v.slug} onChange={(e) => set('slug')(slugify(e.target.value))} error={errors['vibe.slug']} disabled={locks.vibe} hint={`/vibes/${v.slug || '…'}`} />
+            <Field label="Fim" type="datetime-local" value={v.endsAt} onChange={(e) => set('endsAt')(e.target.value)} error={errors['vibe.endsAt']} disabled={locks.finished} />
+            {!locks.finished && <Duration onPick={(d) => set('endsAt')(toLocal(new Date(start.getTime() + d * DAY)))} />}
           </div>
+          <div className="na-values">
+            <Field label="Get mínimo (R$)" inputMode="numeric" value={v.minGet} onChange={(e) => set('minGet')(maskBrl(e.target.value))} error={errors['vibe.minGetCents']} disabled={locks.vibe} />
+            <Field label="Cashback (%)" inputMode="numeric" value={v.cashback} onChange={(e) => set('cashback')(e.target.value.replace(/\D/g, '').slice(0, 3))} error={errors['vibe.cashbackPercent']} disabled={locks.vibe} hint="Para quem não vence." />
+            <Field label="Meta de Gets" inputMode="numeric" placeholder="Opcional" value={v.goal} onChange={(e) => set('goal')(intOnly(e.target.value))} error={errors['vibe.goalGets']} disabled={locks.finished} hint="Só informativa." />
+          </div>
+          <SlugField value={v.slug} onChange={(val) => set('slug')(slugify(val))} error={errors['vibe.slug']} disabled={locks.vibe} />
           {!locks.vibe && (
             <div className="af-field">
               <div className="af-label-row"><span className="na-label">Benefícios extras</span></div>

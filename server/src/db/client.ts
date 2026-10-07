@@ -34,11 +34,13 @@ export interface CreateDbOptions {
   databaseUrl?: string | undefined
   /** Diretório do PGlite. `null` = memória (testes). */
   pgliteDataDir?: string | null
+  /** Conexões no pool do Postgres (serverless usa poucas por instância). */
+  maxConnections?: number
 }
 
 export async function createDb(opts: CreateDbOptions): Promise<DbHandle> {
   if (opts.databaseUrl) {
-    const pool = new pg.Pool({ connectionString: opts.databaseUrl, max: 10 })
+    const pool = new pg.Pool({ connectionString: opts.databaseUrl, max: opts.maxConnections ?? 10 })
     const db = drizzlePg({ client: pool, schema })
     return {
       db: db as unknown as Db,

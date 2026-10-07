@@ -121,6 +121,16 @@ const envSchema = z
 
     // D5: upload de imagens (servidas em /uploads)
     UPLOAD_DIR: z.string().default('./uploads'),
+    // disk = arquivos em UPLOAD_DIR; db = tabela uploaded_images (ambientes sem disco persistente, ex.: Vercel)
+    UPLOAD_STORAGE: z.enum(['disk', 'db']).default('disk'),
+
+    // Ambiente de TESTES publicado (ex.: Vercel): opt-ins explícitos, nunca em produção real.
+    // PAYMENT_SIMULATION libera POST /payments/:id/simulate mesmo com NODE_ENV=production.
+    PAYMENT_SIMULATION: bool(false),
+    // MAIL_LOG_LINKS registra no log os links de e-mail (confirmação/redefinição) quando não há provedor de e-mail.
+    MAIL_LOG_LINKS: bool(false),
+    // Segredo do Vercel Cron (Authorization: Bearer) para POST /api/v1/internal/jobs. Vazio = rota não existe.
+    CRON_SECRET: z.preprocess(emptyToUndefined, z.string().min(16).optional()),
     UPLOAD_MAX_BYTES: z.coerce.number().int().min(10_000).max(20_000_000).default(5_000_000),
     TERMS_VERSION: z.string().min(1).default('2026-09'),
 
@@ -175,6 +185,8 @@ const envSchema = z
     const ephemeral = () => randomBytes(48).toString('base64url')
     const warnings: string[] = []
     if (!env.NODE_ENV) warnings.push('NODE_ENV ausente: aplicando regras de produção.')
+    if (!devLike && env.PAYMENT_SIMULATION) warnings.push('PAYMENT_SIMULATION ligado: qualquer usuário marca o próprio pagamento como pago. Só em ambiente de testes.')
+    if (!devLike && env.MAIL_LOG_LINKS) warnings.push('MAIL_LOG_LINKS ligado: links de e-mail (com token) vão para o log. Só em ambiente de testes.')
     if (!devLike && !env.JWT_SECRET) warnings.push('JWT_SECRET ausente: usando segredo aleatório efêmero (sessões caem a cada restart).')
     if (!devLike && !env.PAYMENT_WEBHOOK_SECRET) {
       warnings.push('PAYMENT_WEBHOOK_SECRET ausente: segredo aleatório efêmero (webhooks serão recusados).')
@@ -190,7 +202,7 @@ const envSchema = z
       isProduction: !devLike,
       isTest: env.NODE_ENV === 'test',
       /** Simulação de pagamento só com NODE_ENV=development|test explícito. */
-      allowPaymentSimulation: devLike,
+      allowPaymentSimulation: devLike || env.PAYMENT_SIMULATION,
       warnings,
     }
   })

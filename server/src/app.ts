@@ -20,6 +20,7 @@ import meRoutes from './modules/me/routes.js'
 import paymentRoutes from './modules/payments/routes.js'
 import vibeRoutes from './modules/vibes/routes.js'
 import prizeRoutes from './modules/prizes/routes.js'
+import internalRoutes from './modules/internal/routes.js'
 import authPlugin from './plugins/auth.js'
 import errorsPlugin from './plugins/errors.js'
 import securityPlugin from './plugins/security.js'
@@ -94,7 +95,8 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   const ctx: AppContext = {
     db: opts.db,
     env,
-    mailer: opts.mailer ?? new ConsoleMailer(app.log, env.isProduction),
+    // Em produção o link (com token) não vai para o log, a menos que MAIL_LOG_LINKS esteja ligado (só testes).
+    mailer: opts.mailer ?? new ConsoleMailer(app.log, env.isProduction && !env.MAIL_LOG_LINKS),
     settings: new SettingsStore(opts.db, env, app.log),
     fetch: opts.fetch ?? ((url, init) => globalThis.fetch(url, init)),
     log: app.log,
@@ -133,6 +135,7 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
       await api.register(addressRoutes)
       await api.register(marketRoutes)
       await api.register(prizeRoutes)
+      await api.register(internalRoutes)
     },
     { prefix: API_PREFIX },
   )

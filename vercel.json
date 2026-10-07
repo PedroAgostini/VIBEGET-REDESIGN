@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install && npm ci --prefix server",
+  "buildCommand": "npm run build && npm run build --prefix server",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30,
+      "includeFiles": "server/drizzle/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/v1/:path*", "destination": "/api" },
+    { "source": "/uploads/:name", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "crons": [{ "path": "/api/v1/internal/jobs", "schedule": "0 6 * * *" }]
+}

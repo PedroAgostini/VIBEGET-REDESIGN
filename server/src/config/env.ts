@@ -131,6 +131,9 @@ const envSchema = z
     DATA_KEY_ID: z.string().regex(/^[a-z0-9]{1,16}$/i).default('v1'),
     DATA_KEYS_OLD: keyList,
     DATA_INDEX_KEY: z.preprocess(emptyToUndefined, z.string().min(32).optional()),
+    // LGPD (QA-15): por quanto tempo guardar IP na auditoria e sessões/links de e-mail encerrados.
+    AUDIT_IP_RETENTION_DAYS: z.coerce.number().int().min(1).max(3650).default(180),
+    SESSION_RETENTION_DAYS: z.coerce.number().int().min(1).max(365).default(30),
     PAYMENT_TTL_MINUTES: z.coerce.number().int().min(1).max(1440).default(30),
     JOBS_INTERVAL_MS: z.coerce.number().int().min(0).default(60_000),
 

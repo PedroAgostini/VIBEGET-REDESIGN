@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/bricolage-grotesque/wdth.css'
 import '@fontsource-variable/onest'
@@ -18,21 +18,10 @@ import Gets from './pages/dashboard/Gets.jsx'
 import Wallet from './pages/dashboard/Wallet.jsx'
 import Buy from './pages/dashboard/Buy.jsx'
 import Market from './pages/dashboard/Market.jsx'
-import AdminShell from './pages/admin/AdminShell.jsx'
-import Overview from './pages/admin/Overview.jsx'
-import Withdrawals from './pages/admin/Withdrawals.jsx'
-import Deliveries from './pages/admin/Deliveries.jsx'
-import AdminVibes from './pages/admin/AdminVibes.jsx'
-import NewAuction from './pages/admin/NewAuction.jsx'
-import Users from './pages/admin/Users.jsx'
-import UserDetail from './pages/admin/UserDetail.jsx'
-import Settings from './pages/admin/Settings.jsx'
-import Coupons from './pages/admin/Coupons.jsx'
-import Packages from './pages/admin/Packages.jsx'
-import EditAuction from './pages/admin/EditAuction.jsx'
-import AdminMarket from './pages/admin/AdminMarket.jsx'
-import Audit from './pages/admin/Audit.jsx'
 import { AuthProvider, RequireAuth, RequireStaff } from './lib/auth.jsx'
+
+// Painel da equipe em pacote separado: só é baixado depois que o RequireStaff confirma o papel.
+const AdminRoutes = lazy(() => import('./pages/admin/AdminRoutes.jsx'))
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -55,21 +44,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="marketplace" element={<Market />} />
             <Route path="conta" element={<Account />} />
           </Route>
-          <Route path="/admin" element={<RequireStaff><AdminShell /></RequireStaff>}>
-            <Route index element={<Overview />} />
-            <Route path="saques" element={<Withdrawals />} />
-            <Route path="entregas" element={<Deliveries />} />
-            <Route path="usuarios" element={<Users />} />
-            <Route path="usuarios/:id" element={<UserDetail />} />
-            <Route path="configuracoes" element={<Settings />} />
-            <Route path="cupons" element={<Coupons />} />
-            <Route path="pacotes" element={<Packages />} />
-            <Route path="marketplace" element={<AdminMarket />} />
-            <Route path="auditoria" element={<Audit />} />
-            <Route path="vibes" element={<AdminVibes />} />
-            <Route path="vibes/nova" element={<NewAuction />} />
-            <Route path="vibes/:id/editar" element={<EditAuction />} />
-          </Route>
+          <Route path="/admin/*" element={<RequireStaff><Suspense fallback={null}><AdminRoutes /></Suspense></RequireStaff>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

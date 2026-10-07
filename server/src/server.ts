@@ -1,6 +1,8 @@
 import { buildApp } from './app.js'
 import { EnvError, loadEnv } from './config/env.js'
 import { createDb } from './db/client.js'
+import { encryptLegacyData } from './db/encrypt-legacy.js'
+import { configureFieldCryptoFromEnv } from './lib/field-crypto.js'
 import { startJobs } from './jobs/index.js'
 
 async function main() {
@@ -15,11 +17,15 @@ async function main() {
     throw err
   }
 
+  configureFieldCryptoFromEnv(env)
   const handle = await createDb({ databaseUrl: env.DATABASE_URL, pgliteDataDir: env.PGLITE_DATA_DIR })
   if (env.AUTO_MIGRATE && handle.kind === 'pglite') {
     // Em dev com PGlite aplicamos as migrações no boot (o diretório não pode ser aberto por 2 processos).
     await handle.migrate()
   }
+  // Cifra o que ainda estiver em texto puro (ou com chave antiga). Idempotente e barato quando não há pendências.
+  const { updated } = await encryptLegacyData(handle.db)
+  if (updated) console.info(`criptografia: ${updated} registro(s) cifrado(s) agora`)
 
   const app = await buildApp({ db: handle.db, env })
   for (const w of env.warnings) app.log.warn(w)

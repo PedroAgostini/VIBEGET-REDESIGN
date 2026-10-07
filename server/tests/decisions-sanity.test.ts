@@ -11,6 +11,7 @@ import { loadEnv } from '../src/config/env.js'
 import { payments, vibes } from '../src/db/schema.js'
 import { seed } from '../src/db/seed.js'
 import { bearer, createLiveVibe, createTestApp, CSRF, nextCpf, userWithToken, type TestContext } from './helpers.js'
+import { PROD_ENV } from './qa-helpers.js'
 
 let t: TestContext
 let admin: Awaited<ReturnType<typeof userWithToken>>
@@ -224,7 +225,7 @@ describe('D5 — upload, leilão e seed', () => {
   })
 
   it('seed --demo é recusado em produção; seed normal grava settings e não cria produtos', async () => {
-    const prod = loadEnv({ NODE_ENV: 'production', DATABASE_URL: 'postgres://a:b@h:5432/d', JWT_SECRET: 'x'.repeat(40), PAYMENT_WEBHOOK_SECRET: 'y'.repeat(40) })
+    const prod = loadEnv({ ...PROD_ENV, DATABASE_URL: 'postgres://a:b@h:5432/d', JWT_SECRET: 'x'.repeat(40), PAYMENT_WEBHOOK_SECRET: 'y'.repeat(40) })
     await expect(seed(t.db, { demo: true, env: prod })).rejects.toThrow(/produção/)
     const log = await seed(t.db, { env: t.env })
     expect(log.join('\n')).toMatch(/NÃO criados/)

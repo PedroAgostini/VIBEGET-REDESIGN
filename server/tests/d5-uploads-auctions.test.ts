@@ -12,7 +12,7 @@ import { loadEnv } from '../src/config/env.js'
 import { products, vibes } from '../src/db/schema.js'
 import { seed } from '../src/db/seed.js'
 import { bearer, createTestApp, userWithToken, type TestContext } from './helpers.js'
-import { PROD_ENV, send } from './qa-helpers.js'
+import { DATA_KEYS, PROD_ENV, send } from './qa-helpers.js'
 
 let t: TestContext
 let admin: Awaited<ReturnType<typeof userWithToken>>
@@ -218,7 +218,7 @@ describe('seed', () => {
     const tmp = await createTestApp()
     try {
       await expect(seed(tmp.db, { demo: true, env: loadEnv({ ...PROD_ENV }) })).rejects.toThrow()
-      await expect(seed(tmp.db, { demo: true, env: loadEnv({ DATABASE_URL: PROD_ENV.DATABASE_URL }) })).rejects.toThrow()
+      await expect(seed(tmp.db, { demo: true, env: loadEnv({ DATABASE_URL: PROD_ENV.DATABASE_URL, ...DATA_KEYS }) })).rejects.toThrow()
       await seed(tmp.db, { demo: false, env: tmp.env })
       expect(await tmp.db.select().from(products)).toHaveLength(0)
       await seed(tmp.db, { demo: true, env: tmp.env })

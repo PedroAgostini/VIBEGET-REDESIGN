@@ -5,6 +5,7 @@ import { eq, sql } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { auditLogs, authTokens, users } from '../src/db/schema.js'
 import { sha256 } from '../src/lib/crypto.js'
+import { emailIndex } from '../src/lib/field-crypto.js'
 import {
   bearer,
   createTestApp,
@@ -107,7 +108,7 @@ describe('POST /auth/register', () => {
     const body = validReg(extra)
     const res = await register(body)
     expect(res.statusCode).toBe(400)
-    const [u] = await t.db.select().from(users).where(eq(users.email, body.email as string))
+    const [u] = await t.db.select().from(users).where(eq(users.emailHash, emailIndex(body.email as string)))
     expect(u).toBeUndefined()
   })
 

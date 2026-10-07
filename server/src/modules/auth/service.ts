@@ -13,6 +13,7 @@ import {
   verifyPassword,
 } from '../../lib/crypto.js'
 import { AppError, badRequest, conflict, isUniqueViolation, unauthorized } from '../../lib/errors.js'
+import { cpfIndex, emailIndex } from '../../lib/field-crypto.js'
 import type { MailKind } from '../../lib/mailer.js'
 import { safeErrorForLog } from '../../lib/log-safety.js'
 import { toMe } from '../../lib/presenters.js'
@@ -161,10 +162,12 @@ export async function register(ctx: AppContext, input: RegisterInput, meta: Requ
   }
 
   const taken = () => conflict('Não foi possível concluir o cadastro: e-mail ou CPF já cadastrado.', 'ACCOUNT_EXISTS')
-  const [emailHit] = await db.select({ id: users.id }).from(users).where(eq(users.email, input.email)).limit(1)
+  const emailHash = emailIndex(input.email)
+  const cpfHash = input.cpf ? cpfIndex(input.cpf) : null
+  const [emailHit] = await db.select({ id: users.id }).from(users).where(eq(users.emailHash, emailHash)).limit(1)
   if (emailHit) throw taken()
-  if (input.cpf) {
-    const [cpfHit] = await db.select({ id: users.id }).from(users).where(eq(users.cpf, input.cpf)).limit(1)
+  if (cpfHash) {
+    const [cpfHit] = await db.select({ id: users.id }).from(users).where(eq(users.cpfHash, cpfHash)).limit(1)
     if (cpfHit) throw taken()
   }
 
@@ -181,7 +184,9 @@ export async function register(ctx: AppContext, input: RegisterInput, meta: Requ
         .values({
           name: input.name,
           email: input.email,
+          emailHash,
           cpf: input.cpf ?? null,
+          cpfHash,
           phone: input.phone ?? null,
           birthDate: input.birthDate ?? null,
           passwordHash,
@@ -286,8 +291,9 @@ export async function login(
   meta: RequestMeta,
 ): Promise<AuthResult> {
   const { db } = ctx
-  const [user] = await db.select().from(users).where(eq(users.email, input.email)).limit(1)
-  const emailRef = sha256(input.email).slice(0, 16) // referência não reversível para o audit log
+  const [user] = await db.select().from(users).where(eq(users.emailHash, emailIndex(input.email))).limit(1)
+  // Referência para o audit log: HMAC com chave (um SHA-256 puro de e-mail se reverte por dicionário).
+  const emailRef = emailIndex(input.email).slice(0, 16)
 
   if (!user || user.status === 'DELETED') {
     await fakePasswordVerify(input.password)
@@ -464,14 +470,14 @@ export async function forgotPassword(ctx: AppContext, email: string, meta: Reque
   const [user] = await ctx.db
     .select({ id: users.id, email: users.email, status: users.status })
     .from(users)
-    .where(eq(users.email, email))
+    .where(eq(users.emailHash, emailIndex(email)))
     .limit(1)
   if (!user || user.status !== 'ACTIVE') {
     // Mesmo trabalho de banco (1 audit) do caminho "existe" e sem e-mail: tempo equivalente (QA-08).
     await audit(ctx.db, {
       action: 'PASSWORD_RESET_REQUESTED',
       entity: 'auth',
-      metadata: { emailRef: sha256(email).slice(0, 16), known: false },
+      metadata: { emailRef: emailIndex(email).slice(0, 16), known: false },
       ip: meta.ip,
     })
     return

@@ -51,7 +51,7 @@ export default function Users() {
         <label className="ad-search">
           <MagnifyingGlass size={18} aria-hidden="true" />
           <span className="sr-only">Buscar usuário</span>
-          <input type="search" placeholder="Nome, e-mail ou CPF" value={text} onChange={(e) => setText(e.target.value)} />
+          <input type="search" placeholder="Nome, e-mail completo ou CPF" value={text} onChange={(e) => setText(e.target.value)} />
         </label>
         <label className="vp-sort">
           <span className="sr-only">Situação da conta</span>

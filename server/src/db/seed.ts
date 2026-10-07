@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm'
 import { loadEnv, type Env } from '../config/env.js'
 import { SettingsStore } from '../lib/settings.js'
 import { hashPassword, referralCode } from '../lib/crypto.js'
+import { configureFieldCryptoFromEnv, emailIndex } from '../lib/field-crypto.js'
 import { passwordSchema, emailSchema } from '../modules/auth/schemas.js'
 import { createWallet } from '../modules/wallet/service.js'
 import { createDb, type Db } from './client.js'
@@ -99,7 +100,7 @@ export async function seed(db: Db, opts: SeedOptions) {
     const email = emailSchema.parse(opts.adminEmail)
     const pw = passwordSchema.safeParse(opts.adminPassword)
     if (!pw.success) throw new Error(`SEED_ADMIN_PASSWORD inválida: ${pw.error.issues.map((i) => i.message).join('; ')}`)
-    const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email))
+    const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.emailHash, emailIndex(email)))
     if (existing) {
       log.push(`admin ${email} já existe (senha não alterada)`)
     } else {
@@ -109,6 +110,7 @@ export async function seed(db: Db, opts: SeedOptions) {
         .values({
           name: 'Administrador VibeGet',
           email,
+          emailHash: emailIndex(email),
           passwordHash: await hashPassword(pw.data),
           role: 'ADMIN',
           emailVerifiedAt: now,
@@ -179,6 +181,7 @@ export async function seed(db: Db, opts: SeedOptions) {
 
 async function main() {
   const env = loadEnv()
+  configureFieldCryptoFromEnv(env)
   const handle = await createDb({ databaseUrl: env.DATABASE_URL, pgliteDataDir: env.PGLITE_DATA_DIR })
   try {
     const demo = process.argv.includes('--demo')

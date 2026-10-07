@@ -5,6 +5,7 @@ import { countOpenPrizes, listMyPrizes } from '../prizes/service.js'
 import { audit } from '../../lib/audit.js'
 import { hashPassword, randomToken, referralCode, verifyPassword } from '../../lib/crypto.js'
 import { AppError, badRequest, conflict, isUniqueViolation, unauthorized } from '../../lib/errors.js'
+import { cpfIndex, emailIndex } from '../../lib/field-crypto.js'
 import { toNumber } from '../../lib/money.js'
 import { maskPixKey, toMe } from '../../lib/presenters.js'
 import {
@@ -99,6 +100,8 @@ export async function updateMe(ctx: AppContext, userId: string, input: UpdateMeI
       throw conflict('O CPF já foi informado e não pode ser alterado. Fale com o suporte.', 'CPF_LOCKED')
     }
     patch.cpf = input.cpf
+    // Índice cego: a unicidade do CPF fica no hash (o CPF em si está cifrado).
+    patch.cpfHash = cpfIndex(input.cpf)
   }
   if (input.birthDate !== undefined) {
     if (user.birthDate && user.birthDate !== input.birthDate) {
@@ -318,7 +321,9 @@ export async function deleteMe(ctx: AppContext, userId: string, password: string
       .set({
         name: 'Conta excluída',
         email: `deleted+${user.id}@deleted.invalid`,
+        emailHash: emailIndex(`deleted+${user.id}@deleted.invalid`),
         cpf: null,
+        cpfHash: null,
         phone: null,
         birthDate: null,
         passwordHash: unusableHash,

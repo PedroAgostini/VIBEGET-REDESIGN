@@ -136,12 +136,23 @@ export async function assertLedgerInvariant(t: TestContext) {
   expect((chain as unknown as { rows: unknown[] }).rows).toEqual([])
 }
 
+/**
+ * Chaves de dados explícitas para os testes em modo produção. São as MESMAS do ambiente de teste:
+ * o keyring da criptografia é global no processo, e trocar a chave no meio de um arquivo deixaria
+ * ilegíveis os dados das outras apps abertas nele.
+ */
+export const DATA_KEYS = {
+  DATA_KEY: 'dev-only-insecure-data-key-change-me-0123456789abcdef',
+  DATA_INDEX_KEY: 'dev-only-insecure-index-key-change-me-0123456789abcd',
+} as const
+
 export const PROD_ENV = {
   NODE_ENV: 'production',
   DATABASE_URL: 'postgres://qa:qa@127.0.0.1:5432/qa',
   JWT_SECRET: 'q'.repeat(48),
   PAYMENT_WEBHOOK_SECRET: 'w'.repeat(48),
   COOKIE_SECURE: 'true',
+  ...DATA_KEYS,
 } as const
 
 /** App em modo produção (banco continua PGlite em memória; só o env muda). */

@@ -4,6 +4,7 @@ import {
   bigint,
   boolean,
   check,
+  customType,
   date,
   index,
   integer,
@@ -16,6 +17,19 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
+import { decryptField, encryptField } from '../lib/field-crypto.js'
+
+/**
+ * Dado pessoal cifrado (AES-256-GCM, ver lib/field-crypto.ts). O código lê e grava texto normal;
+ * no banco (e em qualquer backup ou cópia) fica só `enc:v1:...`.
+ * ATENÇÃO: não use estas colunas em WHERE/ORDER BY/LIKE (a cifra muda a cada gravação);
+ * para buscar por igualdade use o índice cego (email_hash, cpf_hash).
+ */
+const encryptedText = customType<{ data: string; driverData: string }>({
+  dataType: () => 'text',
+  toDriver: (value) => encryptField(value),
+  fromDriver: (value) => decryptField(value),
+})
 
 // ---------- enums ----------
 export const userRole = pgEnum('user_role', ['USER', 'SUPPORT', 'ADMIN'])
@@ -87,10 +101,13 @@ export const users = pgTable(
   {
     id: id(),
     name: varchar('name', { length: 120 }).notNull(),
-    email: varchar('email', { length: 254 }).notNull(),
-    cpf: varchar('cpf', { length: 11 }),
-    phone: varchar('phone', { length: 20 }),
-    birthDate: date('birth_date', { mode: 'string' }),
+    email: encryptedText('email').notNull(),
+    // Índice cego (HMAC) do e-mail em minúsculas: login, cadastro e unicidade.
+    emailHash: varchar('email_hash', { length: 64 }).notNull(),
+    cpf: encryptedText('cpf'),
+    cpfHash: varchar('cpf_hash', { length: 64 }),
+    phone: encryptedText('phone'),
+    birthDate: encryptedText('birth_date'),
     passwordHash: text('password_hash').notNull(),
     role: userRole('role').notNull().default('USER'),
     level: userLevel('level').notNull().default('EXPLORADOR'),
@@ -104,24 +121,24 @@ export const users = pgTable(
     termsVersion: varchar('terms_version', { length: 32 }),
     marketingOptIn: boolean('marketing_opt_in').notNull().default(false),
     // D8: endereço (opcional até a entrega de um prêmio)
-    cep: varchar('cep', { length: 8 }),
-    street: varchar('street', { length: 160 }),
-    number: varchar('number', { length: 20 }),
-    complement: varchar('complement', { length: 80 }),
-    district: varchar('district', { length: 100 }),
-    city: varchar('city', { length: 100 }),
+    cep: encryptedText('cep'),
+    street: encryptedText('street'),
+    number: encryptedText('number'),
+    complement: encryptedText('complement'),
+    district: encryptedText('district'),
+    city: encryptedText('city'),
     state: varchar('state', { length: 2 }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
-    uniqueIndex('users_email_uq').on(t.email),
-    uniqueIndex('users_cpf_uq').on(t.cpf),
+    uniqueIndex('users_email_hash_uq').on(t.emailHash),
+    uniqueIndex('users_cpf_hash_uq').on(t.cpfHash),
     uniqueIndex('users_referral_code_uq').on(t.referralCode),
     index('users_created_at_idx').on(t.createdAt),
-    check('users_email_lower_ck', sql`${t.email} = lower(${t.email})`),
-    check('users_cpf_digits_ck', sql`${t.cpf} IS NULL OR ${t.cpf} ~ '^[0-9]{11}$'`),
+    // CPF e e-mail não podem ser checados no banco (estão cifrados); a validação é do app (zod).
+    check('users_cpf_hash_ck', sql`(${t.cpf} IS NULL) = (${t.cpfHash} IS NULL)`),
   ],
 )
 
@@ -137,8 +154,8 @@ export const sessions = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     replacedById: uuid('replaced_by_id'),
-    userAgent: varchar('user_agent', { length: 512 }),
-    ip: varchar('ip', { length: 64 }),
+    userAgent: encryptedText('user_agent'),
+    ip: encryptedText('ip'),
     createdAt: createdAt(),
   },
   (t) => [
@@ -360,7 +377,7 @@ export const auditLogs = pgTable(
     entity: varchar('entity', { length: 32 }).notNull(),
     entityId: uuid('entity_id'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
-    ip: varchar('ip', { length: 64 }),
+    ip: encryptedText('ip'),
     createdAt: createdAt(),
   },
   (t) => [
@@ -533,7 +550,7 @@ export const withdrawals = pgTable(
       .references(() => users.id),
     amountCents: cents('amount_cents').notNull(),
     pixKeyType: pixKeyType('pix_key_type').notNull(),
-    pixKey: varchar('pix_key', { length: 140 }).notNull(),
+    pixKey: encryptedText('pix_key').notNull(),
     status: withdrawalStatus('status').notNull().default('PENDING'),
     idempotencyKey: varchar('idempotency_key', { length: 128 }).notNull(),
     decidedById: uuid('decided_by_id'),
@@ -629,14 +646,14 @@ export const prizeDeliveries = pgTable(
       .notNull()
       .references(() => users.id),
     status: prizeStatus('status').notNull().default('AWAITING_ADDRESS'),
-    recipientName: varchar('recipient_name', { length: 120 }),
-    phone: varchar('phone', { length: 20 }),
-    cep: varchar('cep', { length: 8 }),
-    street: varchar('street', { length: 160 }),
-    number: varchar('number', { length: 20 }),
-    complement: varchar('complement', { length: 80 }),
-    district: varchar('district', { length: 100 }),
-    city: varchar('city', { length: 100 }),
+    recipientName: encryptedText('recipient_name'),
+    phone: encryptedText('phone'),
+    cep: encryptedText('cep'),
+    street: encryptedText('street'),
+    number: encryptedText('number'),
+    complement: encryptedText('complement'),
+    district: encryptedText('district'),
+    city: encryptedText('city'),
     state: varchar('state', { length: 2 }),
     addressConfirmedAt: timestamp('address_confirmed_at', { withTimezone: true }),
     carrier: varchar('carrier', { length: 60 }),

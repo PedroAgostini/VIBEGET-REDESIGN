@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastif
 import { loadEnv, type Env } from './config/env.js'
 import type { AppContext } from './context.js'
 import type { Db } from './db/client.js'
+import { configureFieldCryptoFromEnv } from './lib/field-crypto.js'
 import { logCensor } from './lib/log-safety.js'
 import { SettingsStore } from './lib/settings.js'
 import { ConsoleMailer, type Mailer } from './lib/mailer.js'
@@ -33,6 +34,8 @@ export interface BuildAppOptions {
   rateLimit?: boolean
   /** HTTP de saída (proxy de CEP); padrão: fetch global. */
   fetch?: AppContext['fetch']
+  /** Recebe cada rota registrada (testes: matriz de acesso de todas as rotas). */
+  onRoute?: (route: { method: string | string[]; url: string }) => void
 }
 
 export const API_PREFIX = '/api/v1'
@@ -69,6 +72,8 @@ const hopsTrust = (n: number) => (_addr: string, hop: number) => hop < n
 /** Fábrica testável: recebe o banco pronto (migrado) e devolve a app sem abrir porta. */
 export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> {
   const env = opts.env ?? loadEnv()
+  // Dados pessoais são cifrados no banco (LGPD); sem a chave nada é lido nem gravado.
+  configureFieldCryptoFromEnv(env)
   const loggerOpts: FastifyServerOptions['logger'] =
     opts.logger === false
       ? false
@@ -98,6 +103,10 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
     },
   }
   app.decorate('ctx', ctx)
+  if (opts.onRoute) {
+    const collect = opts.onRoute
+    app.addHook('onRoute', (r) => collect({ method: r.method, url: r.url }))
+  }
   app.decorateRequest('receivedAt', 0)
   app.addHook('onRequest', async (req) => {
     req.receivedAt = Date.now()

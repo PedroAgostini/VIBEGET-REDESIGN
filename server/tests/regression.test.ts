@@ -33,6 +33,7 @@ import {
   getRow,
   paymentOfGet,
   placeGet,
+  DATA_KEYS,
   PROD_ENV,
   send,
   webhook,
@@ -157,9 +158,13 @@ describe('QA-05 — sem NODE_ENV = regras de produção', () => {
     expect(() => loadEnv({})).toThrow(EnvError)
   })
 
+  it('sem NODE_ENV e sem chaves de dados → EnvError (dado cifrado com chave efêmera ficaria ilegível)', () => {
+    expect(() => loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app' })).toThrow(EnvError)
+  })
+
   it('sem NODE_ENV: isProduction, simulação desligada, segredos NÃO são os de dev e mudam a cada boot', () => {
-    const a = loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app' })
-    const b = loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app' })
+    const a = loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app', ...DATA_KEYS })
+    const b = loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app', ...DATA_KEYS })
     expect(a.isProduction).toBe(true)
     expect(a.allowPaymentSimulation).toBe(false)
     expect(a.JWT_SECRET).not.toMatch(/^dev-only/)
@@ -169,12 +174,12 @@ describe('QA-05 — sem NODE_ENV = regras de produção', () => {
   })
 
   it('sem NODE_ENV: segredo informado curto é recusado; COOKIE_SECURE=false recusado', () => {
-    expect(() => loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app', JWT_SECRET: 'a'.repeat(20) })).toThrow(EnvError)
-    expect(() => loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app', COOKIE_SECURE: 'false' })).toThrow(EnvError)
+    expect(() => loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app', JWT_SECRET: 'a'.repeat(20), ...DATA_KEYS })).toThrow(EnvError)
+    expect(() => loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app', COOKIE_SECURE: 'false', ...DATA_KEYS })).toThrow(EnvError)
   })
 
   it('app sem NODE_ENV: /payments/:id/simulate → 404, CSRF exige Origin, HSTS ligado', async () => {
-    const p = await createTestApp({ env: { NODE_ENV: undefined as unknown as string, DATABASE_URL: PROD_ENV.DATABASE_URL } })
+    const p = await createTestApp({ env: { NODE_ENV: undefined as unknown as string, DATABASE_URL: PROD_ENV.DATABASE_URL, ...DATA_KEYS } })
     try {
       expect(p.env.isProduction).toBe(true)
       const u = await createUser(p)

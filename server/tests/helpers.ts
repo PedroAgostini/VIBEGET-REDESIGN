@@ -3,6 +3,8 @@ import { eq } from 'drizzle-orm'
 import { buildApp } from '../src/app.js'
 import { loadEnv, type Env } from '../src/config/env.js'
 import { createDb, type Db } from '../src/db/client.js'
+import { encryptLegacyData } from '../src/db/encrypt-legacy.js'
+import { configureFieldCryptoFromEnv, cpfIndex, emailIndex } from '../src/lib/field-crypto.js'
 import { products, users, vibes, type Role } from '../src/db/schema.js'
 import { hashPassword, referralCode } from '../src/lib/crypto.js'
 import { MemoryMailer, type Mailer } from '../src/lib/mailer.js'
@@ -25,11 +27,18 @@ export interface TestContext {
 
 /** App completa com PGlite em memória + migrações aplicadas. Um banco por chamada. */
 export async function createTestApp(
-  opts: { rateLimit?: boolean; env?: Record<string, string>; mailer?: Mailer } = {},
+  opts: {
+    rateLimit?: boolean
+    env?: Record<string, string>
+    mailer?: Mailer
+    onRoute?: (route: { method: string | string[]; url: string }) => void
+  } = {},
 ): Promise<TestContext> {
+  const env = loadEnv({ NODE_ENV: 'test', CORS_ORIGINS: ORIGIN, ...opts.env })
+  configureFieldCryptoFromEnv(env)
   const handle = await createDb({ pgliteDataDir: null })
   await handle.migrate()
-  const env = loadEnv({ NODE_ENV: 'test', CORS_ORIGINS: ORIGIN, ...opts.env })
+  await encryptLegacyData(handle.db)
   const mailer = new MemoryMailer()
   const app = await buildApp({
     db: handle.db,
@@ -37,6 +46,7 @@ export async function createTestApp(
     mailer: opts.mailer ?? mailer,
     logger: false,
     rateLimit: opts.rateLimit ?? false,
+    ...(opts.onRoute ? { onRoute: opts.onRoute } : {}),
   })
   await app.ready()
   let closed = false
@@ -92,16 +102,19 @@ export async function createUser(
 ): Promise<CreatedUser> {
   const email = `user${++emailSeq}.${Date.now()}@teste.vibeget.dev`
   const now = new Date()
+  const cpf = o.cpf === undefined ? nextCpf() : o.cpf
   const [u] = await t.db
     .insert(users)
     .values({
       name: o.name ?? `Usuário Teste ${emailSeq}`,
       email,
+      emailHash: emailIndex(email),
       passwordHash: await hashPassword(PASSWORD),
       role: o.role ?? 'USER',
       status: o.status ?? 'ACTIVE',
       emailVerifiedAt: o.verified === false ? null : now,
-      cpf: o.cpf === undefined ? nextCpf() : o.cpf,
+      cpf,
+      cpfHash: cpf ? cpfIndex(cpf) : null,
       birthDate: o.birthDate === undefined ? '1990-05-10' : o.birthDate,
       referralCode: referralCode(),
       termsAcceptedAt: now,

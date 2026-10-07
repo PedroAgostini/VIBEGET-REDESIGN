@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { loadEnv } from '../config/env.js'
 import { hashPassword } from '../lib/crypto.js'
+import { configureFieldCryptoFromEnv, emailIndex } from '../lib/field-crypto.js'
 import { emailSchema, passwordSchema } from '../modules/auth/schemas.js'
 import { revokeAllSessions } from '../modules/auth/service.js'
 import { createDb } from './client.js'
@@ -24,9 +25,10 @@ async function main() {
   if (!check.success) throw new Error(`Senha recusada: ${check.error.issues.map((i) => i.message).join(' ')}`)
   if (password.toLowerCase() === email) throw new Error('Senha recusada: não pode ser igual ao e-mail.')
 
+  configureFieldCryptoFromEnv(env)
   const handle = await createDb({ databaseUrl: env.DATABASE_URL, pgliteDataDir: env.PGLITE_DATA_DIR })
   try {
-    const [user] = await handle.db.select({ id: users.id, status: users.status }).from(users).where(eq(users.email, email))
+    const [user] = await handle.db.select({ id: users.id, status: users.status }).from(users).where(eq(users.emailHash, emailIndex(email)))
     if (!user) throw new Error(`Usuário não encontrado: ${email}`)
     if (user.status === 'DELETED') throw new Error('Conta excluída; não é possível definir senha.')
     const passwordHash = await hashPassword(password)

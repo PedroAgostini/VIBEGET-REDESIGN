@@ -9,7 +9,7 @@ import { REDACT_PATHS } from '../src/app.js'
 import { EnvError, loadEnv } from '../src/config/env.js'
 import type { Mailer, SentMail } from '../src/lib/mailer.js'
 import { bearer, createTestApp, createUser, CSRF, ORIGIN, userWithToken, type TestContext } from './helpers.js'
-import { createProdApp, get, PROD_ENV, send } from './qa-helpers.js'
+import { createProdApp, DATA_KEYS, get, PROD_ENV, send } from './qa-helpers.js'
 
 let t: TestContext
 beforeAll(async () => {
@@ -238,6 +238,11 @@ describe('validação de env', () => {
     ['NODE_ENV desconhecido', { NODE_ENV: 'prod' }],
     ['PORT inválida', { PORT: '99999' }],
     ['booleano inválido', { COOKIE_SECURE: 'yes' }],
+    ['DATA_KEY ausente', { DATA_KEY: '' }],
+    ['DATA_KEY curta', { DATA_KEY: 'curto-demais-1234567' }],
+    ['DATA_INDEX_KEY ausente', { DATA_INDEX_KEY: '' }],
+    ['DATA_INDEX_KEY igual à DATA_KEY', { DATA_INDEX_KEY: PROD_ENV.DATA_KEY }],
+    ['DATA_KEYS_OLD malformada', { DATA_KEYS_OLD: 'sem-dois-pontos' }],
   ])('produção recusa %s (EnvError, sem ecoar valores)', (_l, o) => {
     try {
       loadEnv({ ...good, ...o })
@@ -256,7 +261,7 @@ describe('validação de env', () => {
    * Get como pago sem pagar). Esperado: exigir NODE_ENV explícito ou um opt-in separado para a simulação.
    */
   it('[QA-05] sem NODE_ENV não deveria subir com simulação de pagamento e segredos de dev', () => {
-    const env = loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app' })
+    const env = loadEnv({ DATABASE_URL: 'postgres://x:y@db:5432/app', ...DATA_KEYS })
     const insecure = !env.isProduction && env.JWT_SECRET.startsWith('dev-only')
     expect(insecure).toBe(false)
   })

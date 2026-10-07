@@ -6,6 +6,7 @@ import { auditLogs, getcoinLedger, gets, payments, prizeDeliveries, products, us
 import { audit } from '../../lib/audit.js'
 import { normalizeCpf } from '../../lib/cpf.js'
 import { AppError, conflict, forbidden, isUniqueViolation, notFound } from '../../lib/errors.js'
+import { cpfIndex, emailIndex } from '../../lib/field-crypto.js'
 import { toNumber } from '../../lib/money.js'
 import { escapeLike, offsetOf, paginated } from '../../lib/pagination.js'
 import { toAdminUser } from '../../lib/presenters.js'
@@ -112,7 +113,8 @@ export async function listUsers(ctx: AppContext, q: In<typeof listUsersQuery>) {
   if (q.q) {
     const cpf = normalizeCpf(q.q)
     const term = `%${escapeLike(q.q)}%`
-    conds.push(cpf ? eq(users.cpf, cpf) : or(ilike(users.name, term), ilike(users.email, term))!)
+    // E-mail e CPF estão cifrados: busca exata pelo índice cego; o nome aceita trecho.
+    conds.push(cpf ? eq(users.cpfHash, cpfIndex(cpf)) : or(ilike(users.name, term), eq(users.emailHash, emailIndex(q.q)))!)
   }
   if (q.role) conds.push(eq(users.role, q.role))
   if (q.status) conds.push(eq(users.status, q.status))

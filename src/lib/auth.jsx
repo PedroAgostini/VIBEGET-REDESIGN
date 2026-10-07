@@ -55,7 +55,12 @@ export function RequireStaff({ children }) {
   return children
 }
 
-/** Rota de destino segura: só caminhos internos, nunca "//host" ou URL absoluta. */
+/**
+ * Rota de destino segura: só caminhos internos. Recusa "//host", URL absoluta e os desvios clássicos
+ * de open redirect ("/\host", barras invertidas e caracteres de controle, que o navegador normaliza).
+ */
 export function safeNext(value, fallback = '/dashboard') {
-  return value && value.startsWith('/') && !value.startsWith('//') ? value : fallback
+  if (typeof value !== 'string' || value.length > 512) return fallback
+  if (!/^\/(?![/\\])/.test(value) || /[\\\u0000-\u001f\u007f]/.test(value)) return fallback
+  return value
 }

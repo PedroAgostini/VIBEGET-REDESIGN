@@ -4,6 +4,27 @@ import { z } from 'zod'
 // Segredos fixos de desenvolvimento: SÓ usados com NODE_ENV=development|test explícito.
 const DEV_JWT_SECRET = 'dev-only-insecure-jwt-secret-change-me-0123456789'
 const DEV_WEBHOOK_SECRET = 'dev-only-insecure-webhook-secret-change-me-012345'
+const DEV_DATA_KEY = 'dev-only-insecure-data-key-change-me-0123456789abcdef'
+const DEV_DATA_INDEX_KEY = 'dev-only-insecure-index-key-change-me-0123456789abcd'
+
+/** "id:segredo,id:segredo" → { id: segredo } (chaves antigas, só para decifrar). */
+const keyList = z
+  .string()
+  .optional()
+  .transform((v, ctx) => {
+    const out: Record<string, string> = {}
+    for (const item of (v ?? '').split(',').map((s) => s.trim()).filter(Boolean)) {
+      const i = item.indexOf(':')
+      const id = item.slice(0, i)
+      const secret = item.slice(i + 1)
+      if (i < 1 || !/^[a-z0-9]{1,16}$/i.test(id) || secret.length < 32) {
+        ctx.addIssue({ code: 'custom', message: 'use id:segredo (segredo com 32+ caracteres), separados por vírgula' })
+        return z.NEVER
+      }
+      out[id] = secret
+    }
+    return out
+  })
 
 const bool = (def: boolean) =>
   z
@@ -104,6 +125,12 @@ const envSchema = z
     TERMS_VERSION: z.string().min(1).default('2026-09'),
 
     PAYMENT_WEBHOOK_SECRET: z.preprocess(emptyToUndefined, z.string().min(16).optional()),
+
+    // LGPD: criptografia dos dados pessoais no banco (ver src/lib/field-crypto.ts).
+    DATA_KEY: z.preprocess(emptyToUndefined, z.string().min(32).optional()),
+    DATA_KEY_ID: z.string().regex(/^[a-z0-9]{1,16}$/i).default('v1'),
+    DATA_KEYS_OLD: keyList,
+    DATA_INDEX_KEY: z.preprocess(emptyToUndefined, z.string().min(32).optional()),
     PAYMENT_TTL_MINUTES: z.coerce.number().int().min(1).max(1440).default(30),
     JOBS_INTERVAL_MS: z.coerce.number().int().min(0).default(60_000),
 
@@ -132,6 +159,13 @@ const envSchema = z
     ) {
       ctx.addIssue({ code: 'custom', path: ['PAYMENT_WEBHOOK_SECRET'], message: `mínimo de 32 caracteres ${where}` })
     }
+    // Chaves de dados: sem valor efêmero (dados cifrados com chave perdida ficam ilegíveis para sempre).
+    for (const k of ['DATA_KEY', 'DATA_INDEX_KEY'] as const) {
+      if (!env[k]) ctx.addIssue({ code: 'custom', path: [k], message: `obrigatório ${where} (32+ caracteres; guarde fora do banco e do repositório)` })
+    }
+    if (env.DATA_KEY && env.DATA_KEY === env.DATA_INDEX_KEY) {
+      ctx.addIssue({ code: 'custom', path: ['DATA_INDEX_KEY'], message: 'deve ser diferente de DATA_KEY' })
+    }
   })
   .transform((env) => {
     const devLike = env.NODE_ENV === 'development' || env.NODE_ENV === 'test'
@@ -147,6 +181,9 @@ const envSchema = z
       NODE_ENV: env.NODE_ENV ?? ('production' as const),
       JWT_SECRET: env.JWT_SECRET ?? (devLike ? DEV_JWT_SECRET : ephemeral()),
       PAYMENT_WEBHOOK_SECRET: env.PAYMENT_WEBHOOK_SECRET ?? (devLike ? DEV_WEBHOOK_SECRET : ephemeral()),
+      // Fora de dev/test o superRefine já exigiu as duas; o fallback só vale em dev/test.
+      DATA_KEY: env.DATA_KEY ?? DEV_DATA_KEY,
+      DATA_INDEX_KEY: env.DATA_INDEX_KEY ?? DEV_DATA_INDEX_KEY,
       isProduction: !devLike,
       isTest: env.NODE_ENV === 'test',
       /** Simulação de pagamento só com NODE_ENV=development|test explícito. */

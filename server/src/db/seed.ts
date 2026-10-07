@@ -87,11 +87,13 @@ export interface SeedOptions {
   demo?: boolean
   /** Env para os valores iniciais das configurações (D3). Sem env, não grava settings. */
   env?: Env
+  /** Ambiente de testes publicado (Vercel com SEED_DEMO=true): aceita --demo mesmo com regras de produção. */
+  allowDemoInProduction?: boolean
 }
 
 export async function seed(db: Db, opts: SeedOptions) {
   const log: string[] = []
-  if (opts.demo && opts.env?.isProduction) {
+  if (opts.demo && opts.env?.isProduction && !opts.allowDemoInProduction) {
     throw new Error('seed --demo é recusado em produção (os produtos de demonstração são fictícios).')
   }
 

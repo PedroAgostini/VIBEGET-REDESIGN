@@ -6,4 +6,5 @@ dist/
 !.env.example
 coverage/
 *.log
-uploads/
+# Só a pasta de fotos enviadas (UPLOAD_DIR=./uploads); NÃO o módulo src/modules/uploads.
+/uploads/

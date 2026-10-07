@@ -1,0 +1,16 @@
+# Nunca enviar para a Vercel: dados locais (banco de dev e backups com dados pessoais), fotos, segredos e builds.
+.git
+node_modules
+**/node_modules
+dist
+server/dist
+server/.data
+server/uploads
+server/coverage
+.env*
+**/.env*
+!**/.env.example
+.vercel
+*.log
+.impeccable
+versions

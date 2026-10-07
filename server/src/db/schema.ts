@@ -31,6 +31,12 @@ const encryptedText = customType<{ data: string; driverData: string }>({
   fromDriver: (value) => decryptField(value),
 })
 
+/** Bytes brutos (bytea). PGlite devolve Uint8Array e node-postgres Buffer: normaliza para Buffer. */
+const bytea = customType<{ data: Buffer; driverData: Buffer | Uint8Array }>({
+  dataType: () => 'bytea',
+  fromDriver: (value) => Buffer.from(value),
+})
+
 // ---------- enums ----------
 export const userRole = pgEnum('user_role', ['USER', 'SUPPORT', 'ADMIN'])
 export const userLevel = pgEnum('user_level', ['EXPLORADOR', 'VIBER'])
@@ -670,6 +676,17 @@ export const prizeDeliveries = pgTable(
     check('prize_deliveries_shipped_ck', sql`${t.status} NOT IN ('SHIPPED', 'DELIVERED') OR (${t.carrier} IS NOT NULL AND ${t.trackingCode} IS NOT NULL)`),
   ],
 )
+
+/**
+ * Fotos de produto guardadas no banco (UPLOAD_STORAGE=db): para ambientes sem disco persistente,
+ * como a Vercel. Em servidor comum o padrão continua sendo o disco (UPLOAD_DIR).
+ */
+export const uploadedImages = pgTable('uploaded_images', {
+  name: varchar('name', { length: 64 }).primaryKey(),
+  contentType: varchar('content_type', { length: 32 }).notNull(),
+  data: bytea('data').notNull(),
+  createdAt: createdAt(),
+})
 
 export type User = typeof users.$inferSelect
 export type PrizeDelivery = typeof prizeDeliveries.$inferSelect

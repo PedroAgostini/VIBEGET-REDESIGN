@@ -10,8 +10,8 @@
     }
   },
   "rewrites": [
-    { "source": "/api/v1/:path*", "destination": "/api" },
-    { "source": "/uploads/:name", "destination": "/api" },
+    { "source": "/api/v1/:__vgpath*", "destination": "/api" },
+    { "source": "/uploads/:__vgname", "destination": "/api" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [{ "path": "/api/v1/internal/jobs", "schedule": "0 6 * * *" }]

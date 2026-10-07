@@ -82,7 +82,23 @@ function unavailable(res: ServerResponse) {
   res.end(JSON.stringify({ error: { code: 'UNAVAILABLE', message: 'Serviço indisponível. Tente novamente em instantes.' } }))
 }
 
+/**
+ * Os rewrites do vercel.json repassam os parâmetros do caminho como query (`?__vgpath=...`).
+ * A API valida a query de forma estrita, então eles saem antes de chegar ao Fastify.
+ */
+function stripRewriteParams(req: IncomingMessage) {
+  const raw = req.url ?? '/'
+  const q = raw.indexOf('?')
+  if (q < 0) return
+  const kept = raw
+    .slice(q + 1)
+    .split('&')
+    .filter((pair) => pair && !pair.startsWith('__vg'))
+  req.url = raw.slice(0, q) + (kept.length ? `?${kept.join('&')}` : '')
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  stripRewriteParams(req)
   ready ??= boot().catch((err) => {
     ready = undefined // próxima requisição tenta de novo
     throw err
